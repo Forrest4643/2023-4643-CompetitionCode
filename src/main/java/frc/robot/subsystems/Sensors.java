@@ -82,7 +82,7 @@ public class Sensors extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     //getting simulated device handle for navX
-    int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[1]");
+    int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
     //setting simulated yaw angle to the JNI angle
     m_simYawAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
   }

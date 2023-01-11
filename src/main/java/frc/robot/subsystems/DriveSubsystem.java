@@ -75,9 +75,6 @@ public class DriveSubsystem extends SubsystemBase {
   DifferentialDriveOdometry m_odometry = new DifferentialDriveOdometry(
       new Rotation2d(0), m_leftEncoder.getPosition(), m_rightEncoder.getPosition(), new Pose2d(0, 0, new Rotation2d()));
 
-  Pose2d farTargetPose = new Pose2d(new Translation2d(VisionConstants.tgtXPos, VisionConstants.tgtYPos),
-      new Rotation2d(0.0));
-
   // Creating a simulated photonvision system
   SimVisionSystem simVision = new SimVisionSystem(
       "photonvision",
@@ -113,7 +110,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     // motor inversions
     leftLeader.setInverted(false);
-    rightLeader.setInverted(true);
+    rightLeader.setInverted(false);
 
     // defining velocity conversion factor
     m_leftEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
@@ -129,12 +126,6 @@ public class DriveSubsystem extends SubsystemBase {
     // Defining simulated vision target
     simVision.addSimVisionTarget(
         new SimVisionTarget(FieldConstants.aprilTags.get(1), 
-          .1, .3, 1));
-
-    simVision.addSimVisionTarget(
-        new SimVisionTarget(new Pose3d(Units.inchesToMeters(610.77), 
-          Units.inchesToMeters(42.19), 
-          Units.inchesToMeters(18.22), new Rotation3d(0, 0, Math.PI)), 
           .1, .3, 1));
       
 
@@ -170,6 +161,9 @@ public class DriveSubsystem extends SubsystemBase {
      m_driveSim.setInputs(leftLeader.get() * RobotController.getInputVoltage(),
      rightLeader.get() * RobotController.getInputVoltage());
 
+     SmartDashboard.putNumber("leftLeader", leftLeader.get());
+     SmartDashboard.putNumber("rightLeader", rightLeader.get());
+
      // Advance the model by 20 ms. Note that if you are running this
      // subsystem in a separate thread or have changed the nominal timestep
      // of TimedRobot, this value needs to match it.
@@ -187,7 +181,7 @@ public class DriveSubsystem extends SubsystemBase {
      System.out.println("rightDriveDist:" + m_rightEncoder.getPosition());
 
      // sending simulated gyro heading to the main robot code
-     m_sensors.setNavXAngle(-m_driveSim.getHeading().getDegrees());
+     m_sensors.setNavXAngle(-m_driveSim.getHeading().getDegrees()); //inverted
 
   } // end simulationPeriodic
 
@@ -218,8 +212,8 @@ public class DriveSubsystem extends SubsystemBase {
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     //This uses .set and a divider of 12 because to run simulation the .set 
     //command updates the simulated motor values, the .setVoltage command does not.
-    leftLeader.set(leftVolts / 12);
-    rightLeader.set(rightVolts / 12);
+    leftLeader.set(leftVolts / RobotController.getInputVoltage());
+    rightLeader.set(rightVolts / RobotController.getInputVoltage());
     m_robotDrive.feed();
   }
 

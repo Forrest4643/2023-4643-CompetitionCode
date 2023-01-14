@@ -38,6 +38,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
@@ -48,32 +51,49 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 public class DriveSubsystem extends SubsystemBase {
 
 
   // defining motor names and CAN ID's
-  private final CANSparkMax leftLeader = new CANSparkMax(DriveConstants.leftFrontID, MotorType.kBrushless);
-  private final CANSparkMax leftFollower = new CANSparkMax(DriveConstants.leftRearID, MotorType.kBrushless);
-  private final CANSparkMax rightLeader = new CANSparkMax(DriveConstants.rightFrontID, MotorType.kBrushless);
-  private final CANSparkMax rightFollower = new CANSparkMax(DriveConstants.rightRearID, MotorType.kBrushless);
+  private final CANSparkMax frontLeftSparkMax = new CANSparkMax(DriveConstants.leftFrontID, MotorType.kBrushless);
+  private final CANSparkMax rearLeftSparkMax = new CANSparkMax(DriveConstants.leftRearID, MotorType.kBrushless);
+  private final CANSparkMax frontRightSparkMax = new CANSparkMax(DriveConstants.rightFrontID, MotorType.kBrushless);
+  private final CANSparkMax rearRightSparkMax = new CANSparkMax(DriveConstants.rightRearID, MotorType.kBrushless);
 
   // defining encoders
-  public RelativeEncoder m_leftEncoder = leftLeader.getEncoder();
-  public RelativeEncoder m_rightEncoder = rightLeader.getEncoder();
+  public RelativeEncoder m_frontLeftDriveEncoder = frontLeftSparkMax.getEncoder();
+  public RelativeEncoder m_rearLeftDriveEncoder = rearLeftSparkMax.getEncoder();
+  public RelativeEncoder m_rearRightDriveEncoder = rearRightSparkMax.getEncoder();
+  public RelativeEncoder m_frontRightDriveEncoder = frontRightSparkMax.getEncoder();
 
-  // Defining drivetrain DifferentialDrive
-  public final DifferentialDrive m_robotDrive = new DifferentialDrive(leftLeader, rightLeader);
+  // Locations of the wheels relative to the robot center.
+  Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381);
+  Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
+  Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
+  Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
+  
+  // Defining mecanum drive kinematics
+  MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
+    m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation
+  );
 
-  SlewRateLimiter driveSlew = new SlewRateLimiter(DriveConstants.driveSlew);
-  SlewRateLimiter turnSlew = new SlewRateLimiter(DriveConstants.turnSlew);
+  MecanumDriveWheelPositions m_driveWheelPositions = new MecanumDriveWheelPositions(
+    m_frontLeftDriveEncoder.getPosition(), 
+    m_frontRightDriveEncoder.getPosition(), 
+    m_rearLeftDriveEncoder.getPosition(), 
+    m_rearRightDriveEncoder.getPosition());
+
+  MecanumDriveOdometry m_driveOdometry = new MecanumDriveOdometry(m_kinematics, new Rotation2d(), m_driveWheelPositions);
+
+  MecanumDrive m_robotDrive = new MecanumDrive(frontLeftSparkMax, rearLeftSparkMax, frontRightSparkMax, rearRightSparkMax);
+
 
   Sensors m_sensors;
 
   private Field2d m_field = new Field2d();
 
-  DifferentialDriveOdometry m_odometry = new DifferentialDriveOdometry(
-      new Rotation2d(0), m_leftEncoder.getPosition(), m_rightEncoder.getPosition(), new Pose2d(0, 0, new Rotation2d()));
 
   // Creating a simulated photonvision system
   SimVisionSystem simVision = new SimVisionSystem(
@@ -86,53 +106,27 @@ public class DriveSubsystem extends SubsystemBase {
           VisionConstants.camResolutionHeight, 
           VisionConstants.minTargetAreaPIX);
 
-  // Create the simulation model of our drivetrain.
-  DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(
-      DCMotor.getNEO(2), // 2 NEO motors on each side of the drivetrain.
-      7.29, // 7.29:1 gearing reduction.
-      7.5, // MOI of 7.5 kg m^2 (from CAD model).
-      60.0, // The mass of the robot is 60 kg.
-      Units.inchesToMeters(3), // The robot uses 3" radius wheels.
-      0.7112, // The track width is 0.7112 meters.
-
-      // The standard deviations for measurement noise:
-      // x and y: 0.001 m
-      // heading: 0.001 rad
-      // l and r velocity: 0.1 m/s
-      // l and r position: 0.005 m
-      VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)); // end m_driveSim
-
   // Creates DriveSubsystem
   public DriveSubsystem(Sensors m_sensors) { 
 
     this.m_sensors = m_sensors;
 
-
-    // motor inversions
-    leftLeader.setInverted(false);
-    rightLeader.setInverted(false);
-
     // defining velocity conversion factor
-    m_leftEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
-    m_rightEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
-
-    m_leftEncoder.setPositionConversionFactor(DriveConstants.positionConversionFactor);
-    m_rightEncoder.setPositionConversionFactor(DriveConstants.positionConversionFactor);
-    // setting leftFront to follow leftRear,
-    // and rightFront to follow rightRear
-    leftFollower.follow(leftLeader, false);
-    rightFollower.follow(rightLeader, false);
+    m_frontLeftDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
+    m_frontRightDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
+    m_rearLeftDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
+    m_rearRightDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
 
     // Defining simulated vision target
     simVision.addSimVisionTarget(
         new SimVisionTarget(FieldConstants.aprilTags.get(1), 
           .1, .3, 1));
       
-
     // sending simulated field data to SmartDashboard
     SmartDashboard.putData("Field", m_field);
 
   } // end Public DriveSubsystem
+
 
   public void DriveSiminit() {
     // this runs once at the start of Simulation
@@ -140,48 +134,37 @@ public class DriveSubsystem extends SubsystemBase {
 
   // reset DriveTrain encoders to 0
   public void resetDriveEncoders() {
-    m_leftEncoder.setPosition(0);
-    m_rightEncoder.setPosition(0);
+    m_frontLeftDriveEncoder.setPosition(0);
+    m_frontRightDriveEncoder.setPosition(0);
+    m_rearLeftDriveEncoder.setPosition(0);
+    m_rearRightDriveEncoder.setPosition(0);
+  }
+
+  public void cartesianMecanumDrive(double xSpeed, double ySpeed, double rotationSpeed) {
+    m_robotDrive.driveCartesian(xSpeed, ySpeed, rotationSpeed);
   }
 
   @Override
   public void periodic() {
     
     // pass telemetry data to get Odometry data
-    m_odometry.update(m_sensors.navXRotation2d(),
-        m_leftEncoder.getPosition(),
-        m_rightEncoder.getPosition());
+    m_driveOdometry.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
     m_field.setRobotPose(getPose());
 
   } // end void periodic
 
   @Override
   public void simulationPeriodic() {
-     // Sets the sim inputs, -1 to 1 signal multiplied by robot controller voltage
-     m_driveSim.setInputs(leftLeader.get() * RobotController.getInputVoltage(),
-     rightLeader.get() * RobotController.getInputVoltage());
-
-     SmartDashboard.putNumber("leftLeader", leftLeader.get());
-     SmartDashboard.putNumber("rightLeader", rightLeader.get());
-
-     // Advance the model by 20 ms. Note that if you are running this
-     // subsystem in a separate thread or have changed the nominal timestep
-     // of TimedRobot, this value needs to match it.
-     m_driveSim.update(0.02);
 
      // update photonvision simulation
-     simVision.processFrame(m_driveSim.getPose());
+    // simVision.processFrame(m_driveSim.getPose());
 
-     // sending simulated encoder values to the main robot code
-     m_leftEncoder.setPosition(m_driveSim.getLeftPositionMeters());
-     m_rightEncoder.setPosition(m_driveSim.getRightPositionMeters());
+    
 
      // Debug info
-     System.out.println("leftDriveDist:" + m_leftEncoder.getPosition());
-     System.out.println("rightDriveDist:" + m_rightEncoder.getPosition());
 
      // sending simulated gyro heading to the main robot code
-     m_sensors.setNavXAngle(-m_driveSim.getHeading().getDegrees()); //inverted
+     //m_sensors.setNavXAngle(-m_driveSim.getHeading().getDegrees()); //inverted
 
   } // end simulationPeriodic
 
@@ -201,42 +184,21 @@ public class DriveSubsystem extends SubsystemBase {
       sinTurn = Math.abs(sinTurn) * -1;
     }
 
-    m_robotDrive.arcadeDrive(driveSlew.calculate(sinSpeed), turnSlew.calculate(sinTurn) / 1.5);
 
     // debug info
     SmartDashboard.putNumber("sinturn", sinTurn);
     SmartDashboard.putNumber("sinspeed", sinSpeed);
   } // end setDrive
 
-  // sets drive motors to a given voltage
-  public void tankDriveVolts(double leftVolts, double rightVolts) {
-    //This uses .set and a divider of 12 because to run simulation the .set 
-    //command updates the simulated motor values, the .setVoltage command does not.
-    leftLeader.set(leftVolts / RobotController.getInputVoltage());
-    rightLeader.set(rightVolts / RobotController.getInputVoltage());
-    m_robotDrive.feed();
-  }
-
-  // this is used for path-following.
-  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    m_leftEncoder.setPosition(m_driveSim.getLeftPositionMeters());
-    m_rightEncoder.setPosition(m_driveSim.getRightPositionMeters());
-    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getVelocity(), m_rightEncoder.getVelocity());
-  }
-
-  // returns the average distance travelled between the left and right wheels
-  public double getAverageEncoderDistance() {
-    return (m_leftEncoder.getPosition() + m_rightEncoder.getPosition()) / 2.0;
-  }
 
   // returns the read position of the robot on the field
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return m_driveOdometry.getPoseMeters();
   }
 
   // resets the read position of the robot on the field
   public void resetOdometry(Pose2d pose) {
     resetDriveEncoders();
-    m_odometry.resetPosition(m_sensors.navXRotation2d(), m_leftEncoder.getPosition(), m_rightEncoder.getPosition(), pose);
+    m_driveOdometry.resetPosition(m_sensors.navXRotation2d(), m_driveWheelPositions, new Pose2d());
   }
 }

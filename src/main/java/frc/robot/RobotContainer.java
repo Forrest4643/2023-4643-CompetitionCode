@@ -28,13 +28,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.HoodConstants;
-import frc.robot.Constants.ShooterConstants;
+import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.IndexerSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PneumaticsSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,8 +38,7 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.TurretConstants;
-import frc.robot.commands.*;
+import frc.robot.commands.cartesianMecanumDrive;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -60,20 +54,13 @@ public class RobotContainer {
   String trajectoryJSON = "Output/Ball1.wpilib.json";
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
-  private IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   private PneumaticsSubsystem m_pneumaticsSubsystem = new PneumaticsSubsystem();
-  private IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
-  private ShooterPIDSubsystem m_shooterPIDsubsystem = new ShooterPIDSubsystem();
-  private HoodPIDSubsystem m_hoodPIDsubsystem = new HoodPIDSubsystem();
   private VisionSubsystem m_visionSubsystem = new VisionSubsystem();
-  private TurretPIDSubsystem m_turretPIDsubsystem = new TurretPIDSubsystem(m_visionSubsystem, m_sensors);
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
-  private ClimberSubsystem m_climbersubsystem = new ClimberSubsystem();
-  private LookForTarget m_lookfortarget = new LookForTarget(m_turretPIDsubsystem);
-  private TrackTarget m_tracktarget = new TrackTarget(m_turretPIDsubsystem);
-  private TurretPosition m_turretposition = new TurretPosition(m_turretPIDsubsystem, TurretConstants.HUBposition);
+  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_driveController.getLeftX(), 
+    m_driveController.getLeftY(), m_driveController.getRightX());
 
   public RobotContainer() {
     // Configure the button bindings
@@ -85,89 +72,12 @@ public class RobotContainer {
       DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
     }
 
-
-    
+    m_driveSubsystem.setDefaultCommand(m_cartesianMecanumDrive);
   }
 
   private void configureButtonBindings() {
 
-
-    // climber up
-    new JoystickButton(m_driveController, 6).toggleOnTrue(new InstantCommand(m_climbersubsystem::up))
-        .toggleOnFalse(new InstantCommand(m_climbersubsystem::idle));
-
-    // climber down
-    new JoystickButton(m_driveController, 5).toggleOnTrue(new InstantCommand(m_climbersubsystem::down))
-        .toggleOnFalse(new InstantCommand(m_climbersubsystem::idle));
-
-    // Front intake
-    new JoystickButton(m_operateController, 4)
-        .toggleOnTrue(new InstantCommand(m_pneumaticsSubsystem::frontIntakeOpen))
-        .toggleOnFalse(new InstantCommand(m_pneumaticsSubsystem::frontIntakeClosed));
-
-    // Rear intake
-    new JoystickButton(m_operateController, 2)
-        .toggleOnTrue(new InstantCommand(m_pneumaticsSubsystem::rearIntakeOpen))
-        .toggleOnFalse(new InstantCommand(m_pneumaticsSubsystem::rearIntakeClosed));
-
-    // shooter+hood activate
-    new JoystickButton(m_operateController, 1).whileTrue(
-        new AutoAim(m_hoodPIDsubsystem, m_visionSubsystem, m_shooterPIDsubsystem));
-
-    // compressor toggle
-    new JoystickButton(m_operateController, 1)
-    .toggleOnTrue(new InstantCommand(m_pneumaticsSubsystem::compOff))
-        .toggleOnFalse(new InstantCommand(m_pneumaticsSubsystem::compOn));
-
-  }
-
-  public InstantCommand DriveSimStart = new InstantCommand(m_driveSubsystem::DriveSiminit);
-
-  public Command getAutonomousCommand() {
-
-      var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
-      new SimpleMotorFeedforward(
-          DriveConstants.ksVolts,
-          DriveConstants.kvVoltSecondsPerMeter,
-          DriveConstants.kaVoltSecondsSquaredPerMeter),
-      DriveConstants.kDriveKinematics,
-      10);
-
-    // Reset odometry to the starting pose of the trajectory.
-    m_driveSubsystem.resetOdometry(Auto1.getInitialPose());
-
-    RamseteCommand ramseteCommand =
-        new RamseteCommand(
-            Auto1,
-            m_driveSubsystem::getPose,
-            new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta),
-            new SimpleMotorFeedforward(
-                DriveConstants.ksVolts,
-                DriveConstants.kvVoltSecondsPerMeter,
-                DriveConstants.kaVoltSecondsSquaredPerMeter),
-            DriveConstants.kDriveKinematics,
-            m_driveSubsystem::getWheelSpeeds,
-            new PIDController(DriveConstants.kPDriveVel, DriveConstants.kIDriveVel, DriveConstants.kDDriveVel),
-            new PIDController(DriveConstants.kPDriveVel, DriveConstants.kIDriveVel, DriveConstants.kDDriveVel),
-            // RamseteCommand passes volts to the callback
-            m_driveSubsystem::tankDriveVolts,
-            m_driveSubsystem);
-    
-    
-    // Run path following command, then stop at the end.
-    return ramseteCommand.andThen( () -> m_driveSubsystem.tankDriveVolts(0,0));
-    
-  }
-
-  public void teleInit() {
-    m_intakeSubsystem.setDefaultCommand(
-                    new AutoIndex(m_intakeSubsystem, m_indexerSubsystem, m_pneumaticsSubsystem, m_sensors,
-                                    m_operateController));
-
-    m_driveSubsystem.setDefaultCommand(new StickDrive(m_driveSubsystem, m_driveController, m_turretPIDsubsystem));
-
   }
 }
-  // Create a voltage constraint to ensure we don't accelerate too fast
 
 

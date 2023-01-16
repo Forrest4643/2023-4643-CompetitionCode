@@ -11,10 +11,10 @@ import edu.wpi.first.math.util.Units;
 
 public final class Constants {
     public static final class DriveConstants {
-        public static final int leftFrontID = 2;
-        public static final int leftRearID = 3;
-        public static final int rightFrontID = 13;
-        public static final int rightRearID = 12;
+        public static final int leftFrontID = 1;
+        public static final int leftRearID = 2;
+        public static final int rightFrontID = 4;
+        public static final int rightRearID = 3;
         public static final double stickDB = 0.05;
         public static final double turnPow = 1;
         public static final double speedPow = 1.2;

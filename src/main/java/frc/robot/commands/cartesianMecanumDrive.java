@@ -4,6 +4,9 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 
@@ -11,10 +14,10 @@ import frc.robot.subsystems.DriveSubsystem;
 public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
-  private final double speedX, speedY, rotationSpeed;
+  private final DoubleSupplier speedX, speedY, rotationSpeed;
 
   /** Creates a new cartesianMecanumDrive. */
-  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, double speedX, double speedY, double rotationSpeed) {
+  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, DoubleSupplier speedX, DoubleSupplier speedY, DoubleSupplier rotationSpeed) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.speedX = speedX;
     this.speedY = speedY;
@@ -28,7 +31,11 @@ public class cartesianMecanumDrive extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_driveSubsystem.cartesianMecanumDrive(speedY, speedX, rotationSpeed);
+    m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, rotationSpeed);
+
+    SmartDashboard.putNumber("speedX", speedX.getAsDouble());
+    SmartDashboard.putNumber("speedY", speedY.getAsDouble());
+    SmartDashboard.putNumber("rotationSpeed", rotationSpeed.getAsDouble());
   }
 
   // Called once the command ends or is interrupted.

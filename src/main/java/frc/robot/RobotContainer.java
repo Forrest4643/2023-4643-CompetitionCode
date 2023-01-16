@@ -30,8 +30,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.PneumaticsSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -54,13 +52,11 @@ public class RobotContainer {
   String trajectoryJSON = "Output/Ball1.wpilib.json";
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
-  private PneumaticsSubsystem m_pneumaticsSubsystem = new PneumaticsSubsystem();
-  private VisionSubsystem m_visionSubsystem = new VisionSubsystem();
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
-  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_driveController.getLeftX(), 
-    m_driveController.getLeftY(), m_driveController.getRightX());
+  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, ()-> m_driveController.getRawAxis(1), 
+    ()-> m_driveController.getRawAxis(0), () -> m_driveController.getRawAxis(2));
 
   public RobotContainer() {
     // Configure the button bindings

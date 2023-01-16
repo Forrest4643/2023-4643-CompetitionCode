@@ -117,6 +117,16 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeftDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
     m_rearRightDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
 
+
+    frontRightSparkMax.setInverted(false);
+    rearRightSparkMax.setInverted(false);
+    frontLeftSparkMax.setInverted(true);
+    rearLeftSparkMax.setInverted(true);
+    frontRightSparkMax.setSmartCurrentLimit(80);
+    frontLeftSparkMax.setSmartCurrentLimit(80);
+    rearRightSparkMax.setSmartCurrentLimit(80);
+    rearLeftSparkMax.setSmartCurrentLimit(80);
+    
     // Defining simulated vision target
     simVision.addSimVisionTarget(
         new SimVisionTarget(FieldConstants.aprilTags.get(1), 
@@ -130,6 +140,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void DriveSiminit() {
     // this runs once at the start of Simulation
+
   }
 
   // reset DriveTrain encoders to 0
@@ -140,8 +151,8 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRightDriveEncoder.setPosition(0);
   }
 
-  public void cartesianMecanumDrive(double xSpeed, double ySpeed, double rotationSpeed) {
-    m_robotDrive.driveCartesian(xSpeed, ySpeed, rotationSpeed);
+  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
+    m_robotDrive.driveCartesian(xSpeed.getAsDouble(), -ySpeed.getAsDouble(), rotationSpeed.getAsDouble());
   }
 
   @Override

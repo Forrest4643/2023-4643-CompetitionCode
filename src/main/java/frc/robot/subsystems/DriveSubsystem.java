@@ -152,7 +152,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
-    m_robotDrive.driveCartesian(xSpeed.getAsDouble(), -ySpeed.getAsDouble(), rotationSpeed.getAsDouble());
+    m_robotDrive.driveCartesian(xSpeed.getAsDouble(), -ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
+    m_robotDrive.setDeadband(.02);
   }
 
   @Override

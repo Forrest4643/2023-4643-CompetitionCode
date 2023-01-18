@@ -53,6 +53,7 @@ public class Sensors extends SubsystemBase {
       DriverStation.reportError("Error instantiating navX-USB: " + ex.getMessage(), true);
     }
 
+    
   }
 
   @Override
@@ -88,7 +89,7 @@ public class Sensors extends SubsystemBase {
   }
 
   public Rotation2d navXRotation2d() {
-    return navX.getRotation2d();
+    return Rotation2d.fromDegrees(navXYaw());
   }
 
   public void setNavXAngle(double angle) {
@@ -111,7 +112,7 @@ public class Sensors extends SubsystemBase {
     navX.reset();
   }
 
-  public double navXTurnRate() {
+  public double   navXTurnRate() {
     return navX.getRate();
   }
 

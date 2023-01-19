@@ -168,40 +168,20 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
 
-     // update photonvision simulation
-    // simVision.processFrame(m_driveSim.getPose());
+     //update photonvision simulation
+    simVision.processFrame(m_driveOdometry.getPoseMeters());
+    m_driveOdometry.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
+    m_field.setRobotPose(getPose());
 
     
 
-     // Debug info
+     //Debug info
 
-     // sending simulated gyro heading to the main robot code
-     //m_sensors.setNavXAngle(-m_driveSim.getHeading().getDegrees()); //inverted
+
+     //sending simulated gyro heading to the main robot code
+     m_sensors.setNavXAngle(getPose().getRotation().getDegrees()); //TODO
 
   } // end simulationPeriodic
-
-  // main setDrive void, this is used for the StickDrive command in TeleOp
-  public void setDrive(double Speed, double turnRate) {
-
-    double sinTurn = DriveConstants.turnSin * (Math.sin(turnRate));
-
-    double sinSpeed = (Math.sin(Speed));
-
-    // this ensures that negative inputs yield negative outputs,
-    // and vise versa
-    if (Speed < 0) {
-      sinSpeed = Math.abs(sinSpeed) * -1;
-    }
-    if (turnRate < 0) {
-      sinTurn = Math.abs(sinTurn) * -1;
-    }
-
-
-    // debug info
-    SmartDashboard.putNumber("sinturn", sinTurn);
-    SmartDashboard.putNumber("sinspeed", sinSpeed);
-  } // end setDrive
-
 
   // returns the read position of the robot on the field
   public Pose2d getPose() {

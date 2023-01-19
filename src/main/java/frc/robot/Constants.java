@@ -15,11 +15,7 @@ public final class Constants {
         public static final int leftRearID = 2;
         public static final int rightFrontID = 4;
         public static final int rightRearID = 3;
-        public static final double stickDB = 0.05;
-        public static final double turnPow = 1;
-        public static final double speedPow = 1.2;
-        public static final double speedSin = 1.5;
-        public static final double turnSin = 1;
+        public static final double inputDeadband = 0.05;
 
         public static final double drivekP = 0.5;
         public static final double drivekI = 0.004;
@@ -33,7 +29,6 @@ public final class Constants {
         public static final double kaVoltSecondsSquaredPerMeter = 0;
         public static final double ksVolts = 0.0;
         public static final double kvVoltSecondsPerMeter = .05;
-        public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(0.7112);
         public static final double kPDriveVel = 1;
         public static final double kIDriveVel = 0;
         public static final double kDDriveVel = 0.2;
@@ -45,34 +40,6 @@ public final class Constants {
         public static final double turnSlew = 5; //TODO test.
 
         public static final double autoDist = -13;
-
-        public static final double driveConversion = 0.1;
-        public static final double driveInchConv = 0.0523598775598;
-    }
-
-    public static final class IndexerConstants {
-
-       
-        public static final double thresh1 = 1;
-        public static final double topThresh = 0;
-        public static final double bottomThresh = 0;
-        public static final double blueThresh = .33;
-        public static final double redThresh = .33;
-        public static final double oneBall = 20;
-        public static final double primeShot = -10;
-        public static final double bangTolerance = .75;
-        public static final int frontID = 6;
-        public static final int rearID = 8;
-
-    }
-
-    public static final class IntakeConstants {
-        public static final int frontID = 7;
-        public static final int rearID = 9;
-
-        public static final double frontRevCurrent = 25;
-        public static final double rearRevCurrent = 25;
-
 
     }
 

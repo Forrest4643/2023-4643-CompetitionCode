@@ -6,9 +6,11 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
 
@@ -45,7 +47,7 @@ public class cartesianMecanumDrive extends CommandBase {
   public void execute() {
 
     //Takes input from the driver and adjusts the robot's expected heading
-    m_expectedHeading = m_expectedHeading + driverHeadingAdjustment.getAsDouble();    
+    m_expectedHeading = m_expectedHeading + MathUtil.applyDeadband(driverHeadingAdjustment.getAsDouble(), DriveConstants.inputDeadband);    
 
     //sending heading to PID controller
     double rotationOutput = driveHeadingController.calculate(m_sensors.navXYaw(), m_expectedHeading);    
@@ -56,7 +58,10 @@ public class cartesianMecanumDrive extends CommandBase {
     //debug info
     SmartDashboard.putNumber("speedX", speedX.getAsDouble());
     SmartDashboard.putNumber("speedY", speedY.getAsDouble());
+    SmartDashboard.putNumber("rotationOutput", rotationOutput);
     SmartDashboard.putNumber("rotationSpeed", driverHeadingAdjustment.getAsDouble());
+    SmartDashboard.putNumber("expectedHeading", m_expectedHeading);
+
   }
 
   // Called once the command ends or is interrupted.

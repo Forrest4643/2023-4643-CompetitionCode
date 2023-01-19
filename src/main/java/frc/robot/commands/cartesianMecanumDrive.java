@@ -16,7 +16,7 @@ import frc.robot.subsystems.Sensors;
 public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
-  private final DoubleSupplier speedX, speedY, rotationSpeed;
+  private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private PIDController driveHeadingController = new PIDController(0.003, 0, 0.0031);
   private Sensors m_sensors;
 
@@ -24,12 +24,12 @@ public class cartesianMecanumDrive extends CommandBase {
 
 
   /** Creates a new cartesianMecanumDrive. */
-  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_sensors, DoubleSupplier speedX, DoubleSupplier speedY, DoubleSupplier rotationSpeed) {
+  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_sensors, DoubleSupplier speedX, DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.m_sensors = m_sensors;
     this.speedX = speedX;
     this.speedY = speedY;
-    this.rotationSpeed = rotationSpeed;
+    this.driverHeadingAdjustment = driverHeadingAdjustment;
 
     m_expectedHeading = 0;
 
@@ -44,15 +44,19 @@ public class cartesianMecanumDrive extends CommandBase {
   @Override
   public void execute() {
 
-    m_expectedHeading = m_expectedHeading + rotationSpeed.getAsDouble();    
+    //Takes input from the driver and adjusts the robot's expected heading
+    m_expectedHeading = m_expectedHeading + driverHeadingAdjustment.getAsDouble();    
 
+    //sending heading to PID controller
     double rotationOutput = driveHeadingController.calculate(m_sensors.navXYaw(), m_expectedHeading);    
 
+    //sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);
 
+    //debug info
     SmartDashboard.putNumber("speedX", speedX.getAsDouble());
     SmartDashboard.putNumber("speedY", speedY.getAsDouble());
-    SmartDashboard.putNumber("rotationSpeed", rotationSpeed.getAsDouble());
+    SmartDashboard.putNumber("rotationSpeed", driverHeadingAdjustment.getAsDouble());
   }
 
   // Called once the command ends or is interrupted.

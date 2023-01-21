@@ -4,28 +4,14 @@
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/photonvision Sim Field": "Field2d"
-    },
-    "windows": {
-      "/SmartDashboard/Field": {
-        "window": {
-          "visible": true
-        }
-      }
     }
   },
   "NetworkTables": {
-    "Retained Values": {
-      "open": false
-    },
     "transitory": {
       "LiveWindow": {
         ".status": {
-          "open": true
-        },
-        "open": true
-      },
-      "Shuffleboard": {
-        "open": true
+          "open": false
+        }
       },
       "SmartDashboard": {
         "Field": {
@@ -34,31 +20,27 @@
         "open": true
       },
       "photonvision": {
-        "open": true,
         "photonvision": {
-          "open": true
+          "open": false
         }
       }
     }
   },
   "NetworkTables Info": {
     "Clients": {
-      "open": true
+      "open": false
     },
     "Connections": {
-      "open": true
+      "open": false
     },
     "Server": {
       "Publishers": {
-        "open": true
+        "open": false
       },
       "Subscribers": {
-        "open": true
+        "open": false
       },
-      "open": true
+      "open": false
     }
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

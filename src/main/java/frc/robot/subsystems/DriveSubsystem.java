@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-//Programmed by Forrest Lasell during the 2022 FRC season for team 4643, Butte Built Bots
+//Programmed by Forrest Lasell during the 2023 FRC season for team 4643, Butte Built Bots
 
 package frc.robot.subsystems;
 
@@ -118,14 +118,21 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRightDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
 
 
+    //setting SparkMax motor inversions
     frontRightSparkMax.setInverted(false);
     rearRightSparkMax.setInverted(false);
     frontLeftSparkMax.setInverted(true);
     rearLeftSparkMax.setInverted(true);
+
+    //setting SparkMax smart current limit
     frontRightSparkMax.setSmartCurrentLimit(80);
     frontLeftSparkMax.setSmartCurrentLimit(80);
     rearRightSparkMax.setSmartCurrentLimit(80);
     rearLeftSparkMax.setSmartCurrentLimit(80);
+
+    
+
+    m_robotDrive.setDeadband(.02);
     
     // Defining simulated vision target
     simVision.addSimVisionTarget(
@@ -152,9 +159,10 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
+    double slewLimitedSpeedX = drivLimiter.calculate(xSpeed.getAsDouble());
+    double slewLimitedSpeedY = drivLimiter.calculate(ySpeed.getAsDouble());
 
-    m_robotDrive.driveCartesian(xSpeed.getAsDouble() / 2, -ySpeed.getAsDouble() / 2, rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
-    m_robotDrive.setDeadband(.02);
+    m_robotDrive.driveCartesian(slewLimitedSpeedX / 2, -slewLimitedSpeedY / 2, rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
   }
 
   @Override
@@ -169,15 +177,14 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
 
-     //update photonvision simulation
+    //update photonvision simulation
     simVision.processFrame(m_driveOdometry.getPoseMeters());
+
+    //updating drive odometry 
     m_driveOdometry.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
+
+    //updating estimated pose on field
     m_field.setRobotPose(getPose());
-
-    
-
-     //Debug info
-
 
      //sending simulated gyro heading to the main robot code
      m_sensors.setNavXAngle(getPose().getRotation().getDegrees()); //TODO

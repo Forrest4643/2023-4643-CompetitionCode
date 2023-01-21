@@ -7,6 +7,8 @@ package frc.robot.commands;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
@@ -17,7 +19,7 @@ public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, rotationSpeed;
-  private PIDController driveHeadingController = new PIDController(0.003, 0, 0.0031);
+  private PIDController driveHeadingPIDController = new PIDController(0.01, 0.0, 0.0004);
   private Sensors m_sensors;
 
   private double m_expectedHeading;
@@ -33,7 +35,7 @@ public class cartesianMecanumDrive extends CommandBase {
 
     m_expectedHeading = 0;
 
-    driveHeadingController.enableContinuousInput(0, 360);
+    driveHeadingPIDController.enableContinuousInput(0, 360);
     addRequirements(m_driveSubsystem);
   }
   // Called when the command is initially scheduled.
@@ -44,15 +46,16 @@ public class cartesianMecanumDrive extends CommandBase {
   @Override
   public void execute() {
 
-    m_expectedHeading = m_expectedHeading + rotationSpeed.getAsDouble();    
+    m_expectedHeading = m_expectedHeading + (rotationSpeed.getAsDouble() * 2);    
 
-    double rotationOutput = driveHeadingController.calculate(m_sensors.navXYaw(), m_expectedHeading);    
+    double rotationOutput = driveHeadingPIDController.calculate(m_sensors.navXRotation2d().getDegrees(), m_expectedHeading);    
 
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);
 
     SmartDashboard.putNumber("speedX", speedX.getAsDouble());
     SmartDashboard.putNumber("speedY", speedY.getAsDouble());
     SmartDashboard.putNumber("rotationSpeed", rotationSpeed.getAsDouble());
+    SmartDashboard.putNumber("expectedHeading", m_expectedHeading);
   }
 
   // Called once the command ends or is interrupted.

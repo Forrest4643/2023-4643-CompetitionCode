@@ -20,7 +20,7 @@ import frc.robot.subsystems.Sensors;
 public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
-  private final DoubleSupplier speedX, speedY, rotationSpeed;
+  private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private PIDController driveHeadingPIDController = new PIDController(0.01, 0.0, 0.0004);
   private Sensors m_sensors;
 
@@ -52,7 +52,7 @@ public class cartesianMecanumDrive extends CommandBase {
     m_expectedHeading = m_expectedHeading + MathUtil.applyDeadband(driverHeadingAdjustment.getAsDouble(), DriveConstants.inputDeadband);    
 
     //sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(m_sensors.navXYaw(), m_expectedHeading);    
+    double rotationOutput = driveHeadingPIDController.calculate(m_sensors.navXYaw(), m_expectedHeading);    
 
     //sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);

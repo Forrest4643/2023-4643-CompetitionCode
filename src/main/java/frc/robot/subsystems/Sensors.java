@@ -112,7 +112,7 @@ public class Sensors extends SubsystemBase {
     navX.reset();
   }
 
-  public double   navXTurnRate() {
+  public double navXTurnRate() {
     return navX.getRate();
   }
 

@@ -69,10 +69,10 @@ public class DriveSubsystem extends SubsystemBase {
   public RelativeEncoder m_frontRightDriveEncoder = frontRightSparkMax.getEncoder();
 
   // Locations of the wheels relative to the robot center.
-  Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381);
-  Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
-  Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
-  Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
+  Translation2d m_frontLeftLocation = new Translation2d(0.7, 0.7);
+  Translation2d m_frontRightLocation = new Translation2d(0.7, -0.7);
+  Translation2d m_backLeftLocation = new Translation2d(-0.7, 0.7);
+  Translation2d m_backRightLocation = new Translation2d(-0.7, -0.7);
   
   // Defining mecanum drive kinematics
   MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
@@ -89,7 +89,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   MecanumDrive m_robotDrive = new MecanumDrive(frontLeftSparkMax, rearLeftSparkMax, frontRightSparkMax, rearRightSparkMax);
 
-
+  SlewRateLimiter drivLimiter = new SlewRateLimiter(.01);
   Sensors m_sensors;
 
   private Field2d m_field = new Field2d();
@@ -152,7 +152,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
-    m_robotDrive.driveCartesian(xSpeed.getAsDouble(), -ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
+
+    m_robotDrive.driveCartesian(xSpeed.getAsDouble() / 2, -ySpeed.getAsDouble() / 2, rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
     m_robotDrive.setDeadband(.02);
   }
 

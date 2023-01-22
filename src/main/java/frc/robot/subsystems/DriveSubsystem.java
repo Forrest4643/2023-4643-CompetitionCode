@@ -89,7 +89,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   MecanumDrive m_robotDrive = new MecanumDrive(frontLeftSparkMax, rearLeftSparkMax, frontRightSparkMax, rearRightSparkMax);
 
-  SlewRateLimiter drivLimiter = new SlewRateLimiter(.01);
+  SlewRateLimiter drivLimiterX = new SlewRateLimiter(1.5);
+  SlewRateLimiter drivLimiterY = new SlewRateLimiter(1.5);
+
   Sensors m_sensors;
 
   private Field2d m_field = new Field2d();
@@ -159,10 +161,11 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
-    double slewLimitedSpeedX = drivLimiter.calculate(xSpeed.getAsDouble());
-    double slewLimitedSpeedY = drivLimiter.calculate(ySpeed.getAsDouble());
+    double slewLimitedSpeedX = drivLimiterX.calculate(xSpeed.getAsDouble());
+    double slewLimitedSpeedY = drivLimiterY.calculate(ySpeed.getAsDouble());
 
-    m_robotDrive.driveCartesian(slewLimitedSpeedX / 2, -slewLimitedSpeedY / 2, rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
+    //x and y input are swapped on driveCartesian, thanks WPI
+    m_robotDrive.driveCartesian(slewLimitedSpeedY / 2, -slewLimitedSpeedX / 2, rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
   }
 
   @Override

@@ -21,7 +21,8 @@ public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
-  private PIDController driveHeadingPIDController = new PIDController(0.01, 0.0, 0.0004);
+  private PIDController driveHeadingPIDController = new PIDController(0.001, 0.0005, 0.00025);
+  private SimpleMotorFeedforward driveHeadingMotorFeedforward = new SimpleMotorFeedforward(0.025, 0, 0);
   private Sensors m_sensors;
 
   private double m_expectedHeading;
@@ -38,6 +39,7 @@ public class cartesianMecanumDrive extends CommandBase {
     m_expectedHeading = 0;
 
     driveHeadingPIDController.enableContinuousInput(0, 360);
+    driveHeadingPIDController.setIntegratorRange(-.1, .1);
     addRequirements(m_driveSubsystem);
   }
   // Called when the command is initially scheduled.
@@ -52,7 +54,8 @@ public class cartesianMecanumDrive extends CommandBase {
     m_expectedHeading = m_expectedHeading + MathUtil.applyDeadband(driverHeadingAdjustment.getAsDouble(), DriveConstants.inputDeadband);    
 
     //sending heading to PID controller
-    double rotationOutput = driveHeadingPIDController.calculate(m_sensors.navXYaw(), m_expectedHeading);    
+    double rotationOutput = driveHeadingPIDController.calculate(m_sensors.navXYaw(), m_expectedHeading)
+    + driveHeadingMotorFeedforward.calculate(driveHeadingPIDController.getPositionError());    
 
     //sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);

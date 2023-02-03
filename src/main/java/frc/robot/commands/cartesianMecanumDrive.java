@@ -40,7 +40,7 @@ public class cartesianMecanumDrive extends CommandBase {
 
     m_expectedHeading = 0;
 
-    driveHeadingPIDController.enableContinuousInput(0, 360);
+    driveHeadingController.enableContinuousInput(0, 360);
     addRequirements(m_driveSubsystem);
   }
   // Called when the command is initially scheduled.

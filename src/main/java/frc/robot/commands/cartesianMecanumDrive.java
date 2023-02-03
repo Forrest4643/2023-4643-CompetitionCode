@@ -22,8 +22,8 @@ public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
-  private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(5, -50, 0);
-  private PIDController driveHeadingController = new PIDController(0.003, 0, 0.0001, 0.01);
+  private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
+  private PIDController driveHeadingController = new PIDController(0.03, 0, 0.0, 0.02);
   private Sensors m_sensors;
 
   private double m_expectedHeading;
@@ -35,9 +35,7 @@ public class cartesianMecanumDrive extends CommandBase {
     this.m_sensors = m_sensors;
     this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), dConstants.inputDeadband) * 1.4);
     this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), dConstants.inputDeadband) * 1.4);
-    this.driverHeadingAdjustment = () -> Math.sin(
-      turnSlewRateLimiter.calculate(Math.abs(MathUtil.applyDeadband(driverHeadingAdjustment.getAsDouble(), dConstants.inputDeadband))) * 1.4); //TODO if input negative so is output.
-
+    this.driverHeadingAdjustment = driverHeadingAdjustment;
     m_expectedHeading = 0;
 
     driveHeadingController.enableContinuousInput(0, 360);
@@ -50,12 +48,24 @@ public class cartesianMecanumDrive extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    double dha = driverHeadingAdjustment.getAsDouble();
+    double headingAdjust;
+    //maintaining minus sign
+    if(dha < 1) {
+      headingAdjust = -MathUtil.applyDeadband(
+      Math.sin(
+        turnSlewRateLimiter.calculate(Math.abs(dha))),dConstants.inputDeadband);
+    } else {
+      headingAdjust = MathUtil.applyDeadband(
+      Math.sin(
+        turnSlewRateLimiter.calculate(Math.abs(dha))),dConstants.inputDeadband);
+    }
 
     //Takes input from the driver and adjusts the robot's expected heading
-    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + driverHeadingAdjustment.getAsDouble() * 2, 0, 360);    
+    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (headingAdjust * 2), 0, 360);    
 
     //sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(m_sensors.NavXFusedHeading(), m_expectedHeading); 
+    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading); 
 
     //sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);
@@ -71,7 +81,9 @@ public class cartesianMecanumDrive extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_driveSubsystem.stopMotors();
+  }
 
   // Returns true when the command should end.
   @Override

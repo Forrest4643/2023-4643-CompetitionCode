@@ -55,8 +55,8 @@ public class RobotContainer {
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
-  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors, () -> m_driveController.getRawAxis(0), 
-    () -> m_driveController.getRawAxis(1), () -> m_driveController.getRawAxis(4));
+  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors, () -> -m_driveController.getRawAxis(0), 
+    () -> m_driveController.getRawAxis(1), () -> -m_driveController.getRawAxis(4));
 
   public RobotContainer() {
     // Configure the button bindings

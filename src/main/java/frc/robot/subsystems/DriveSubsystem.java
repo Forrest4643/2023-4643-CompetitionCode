@@ -25,11 +25,13 @@ import java.util.function.DoubleSupplier;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.SimVisionSystem;
 import org.photonvision.SimVisionTarget;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.RobotPoseEstimator;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -203,12 +205,30 @@ public class DriveSubsystem extends SubsystemBase {
   double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontRightMetersPerSecond;
   double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearRightMetersPerSecond;
   double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearLeftMetersPerSecond;
-    
-  SmartDashboard.putNumber("frontLeftMetersPerSecond:", frontLeftMetersPerSecond);
-  SmartDashboard.putNumber("frontRightMetersPerSecond:", frontRightMetersPerSecond);
-  SmartDashboard.putNumber("rearLeftMetersPerSecond:", rearLeftMetersPerSecond);
-  SmartDashboard.putNumber("rearRightMetersPerSecond:", rearRightMetersPerSecond);
+
+  m_frontLeftPIDFF.setReference(metersPerSecondToRPM(frontLeftMetersPerSecond), ControlType.kVelocity);
+  m_frontRightPIDFF.setReference(metersPerSecondToRPM(frontRightMetersPerSecond), ControlType.kVelocity);
+  m_rearRightPIDFF.setReference(metersPerSecondToRPM(rearRightMetersPerSecond), ControlType.kVelocity);
+  m_rearLeftPIDFF.setReference(metersPerSecondToRPM(rearLeftMetersPerSecond), ControlType.kVelocity);
+
+  SmartDashboard.putNumber("desiredFrontLeftRPM:", metersPerSecondToRPM(frontLeftMetersPerSecond));
+  SmartDashboard.putNumber("desiredFrontRightRPM", metersPerSecondToRPM(frontRightMetersPerSecond));
+  SmartDashboard.putNumber("desiredRearLeftRPM", metersPerSecondToRPM(rearLeftMetersPerSecond));
+  SmartDashboard.putNumber("desiredRearRightRPM", metersPerSecondToRPM(rearRightMetersPerSecond));
+
+  SmartDashboard.putNumber("frontRightRPM", m_frontRightEnc.getVelocity());
+  SmartDashboard.putNumber("frontLeftRPM", m_frontLeftEnc.getVelocity());
+  SmartDashboard.putNumber("rearRightRPM", m_rearRightEnc.getVelocity());
+  SmartDashboard.putNumber("rearLeftRPM", m_rearLeftEnc.getVelocity());
   }
+
+  public void stopMotors() {
+    frontRightSparkMax.set(0);
+    frontLeftSparkMax.set(0);
+    rearLeftSparkMax.set(0);
+    rearRightSparkMax.set(0);
+  }
+  
 
   public void updateOdometry() {
     //sends gyro heading and wheel positions to pose estimator
@@ -231,6 +251,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     //updating the robots estimated pose on the field
     m_field.setRobotPose(m_drivePoseEstimator.getEstimatedPosition());
+  }
+
+  private double metersPerSecondToRPM(double meterspersecond) {
+    return (meterspersecond / 0.4787787204) * 60;
   }
 
   @Override

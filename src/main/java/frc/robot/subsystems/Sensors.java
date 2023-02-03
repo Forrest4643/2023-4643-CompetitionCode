@@ -5,8 +5,7 @@
 package frc.robot.subsystems;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -14,27 +13,22 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.ColorSensorV3;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.TurretConstants;
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.SerialPort;
 
 public class Sensors extends SubsystemBase {
@@ -45,13 +39,15 @@ public class Sensors extends SubsystemBase {
   //simulated yaw angle, for simulation.
   private SimDouble m_simYawAngle;
 
-  private AprilTagFieldLayout aprilTagFieldLayout;
+  public AprilTagFieldLayout aprilTagFieldLayout;
 
-  private PhotonPoseEstimator photonPoseEstimator;
+  public PhotonPoseEstimator photonFrontPoseEstimator;
 
-  private PhotonCamera frontCamera = new PhotonCamera("frontAprilTagCamera");
+  //public PhotonPoseEstimator photonrearPoseEstimator;
 
-  PhotonCamera rearCamera = new PhotonCamera("rearAprilTagCamera");
+  public PhotonCamera frontCamera = new PhotonCamera("frontAprilTagCamera");
+
+  //public PhotonCamera rearCamera = new PhotonCamera("rearAprilTagCamera");
 
   //Cam mounted facing forward, half a meter forward of center.
   Transform3d robotToFrontCam = new Transform3d(
@@ -67,24 +63,24 @@ public class Sensors extends SubsystemBase {
   /** Creates a new IndexSensors. */
   public Sensors() {
 
-    this.photonPoseEstimator = photonPoseEstimator;
-    this.aprilTagFieldLayout = aprilTagFieldLayout;
     // instantiate navx over USB
     try {
       navX = new AHRS(SerialPort.Port.kMXP);
     } catch (RuntimeException ex) {
-      DriverStation.reportError("Error instantiating navX-USB: " + ex.getMessage(), true);
+      DriverStation.reportError("Error instantiating navX-MXP: " + ex.getMessage(), true);
     }
 
      // sends WPI provided AprilTag locations to the PhotonVision field layout object
     try {
-      AprilTagFieldLayout aprilTagFieldLayout = new AprilTagFieldLayout(AprilTagFields.k2023ChargedUp.m_resourceFile);
+      this.aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
     } catch (IOException e) {
-      DriverStation.reportError("Error loading AprilTagFieldLayout on init" + e.getMessage(), true);
+      DriverStation.reportError("Error loading AprilTagFieldLayout in Sensors:" + e.getMessage(), true);
     }
 
     // Construct PhotonPoseEstimator
-    PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, frontCamera, robotToFrontCam);
+    this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, frontCamera, robotToFrontCam);
+    //PhotonPoseEstimator photonRearPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, rearCamera, robotToRearCam);
+
   }
 
   @Override
@@ -104,20 +100,15 @@ public class Sensors extends SubsystemBase {
   }
 
   public Rotation2d navXRotation2d() {
-    return Rotation2d.fromDegrees(navXYaw());
-  }
-
-  public Pose3d photonPoseEstimate() {
-    return null;
-  }
-  
-
-  public void setNavXAngle(double angle) {
-    m_simYawAngle.set(angle);
+    return navX.getRotation2d();
   }
 
   public double navXYaw() {
     return navX.getYaw();
+  }
+
+  public double NavXFusedHeading() {
+    return navX.getFusedHeading();
   }
 
   public double navXPitch() {
@@ -132,7 +123,27 @@ public class Sensors extends SubsystemBase {
     navX.reset();
   }
 
+  public void setSimNavXAngle(double angle) {
+    m_simYawAngle.set(angle);
+  }
+
   public double navXTurnRate() {
     return navX.getRate();
   }
+
+  public Translation2d navXdisplacement() {
+    return new Translation2d(navX.getDisplacementX(), navX.getDisplacementY());
+  }
+
+  public void resetNavxDisplacement() {
+    navX.resetDisplacement();
+  }
+
+  public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+      
+    photonFrontPoseEstimator.setReferencePose(prevEstimatedRobotPose);
+
+    return photonFrontPoseEstimator.update();
+  }
+
 }

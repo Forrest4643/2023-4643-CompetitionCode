@@ -10,24 +10,33 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.FieldConstants;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.aConstants;
+import frc.robot.Constants.dConstants;
+import frc.robot.Constants.vConstants;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.io.IOException;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.SimVisionSystem;
 import org.photonvision.SimVisionTarget;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,6 +45,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
@@ -57,81 +67,114 @@ public class DriveSubsystem extends SubsystemBase {
 
 
   // defining motor names and CAN ID's
-  private final CANSparkMax frontLeftSparkMax = new CANSparkMax(DriveConstants.leftFrontID, MotorType.kBrushless);
-  private final CANSparkMax rearLeftSparkMax = new CANSparkMax(DriveConstants.leftRearID, MotorType.kBrushless);
-  private final CANSparkMax frontRightSparkMax = new CANSparkMax(DriveConstants.rightFrontID, MotorType.kBrushless);
-  private final CANSparkMax rearRightSparkMax = new CANSparkMax(DriveConstants.rightRearID, MotorType.kBrushless);
+  private final CANSparkMax frontLeftSparkMax = new CANSparkMax(dConstants.leftFrontID, MotorType.kBrushless);
+  private final CANSparkMax rearLeftSparkMax = new CANSparkMax(dConstants.leftRearID, MotorType.kBrushless);
+  private final CANSparkMax frontRightSparkMax = new CANSparkMax(dConstants.rightFrontID, MotorType.kBrushless);
+  private final CANSparkMax rearRightSparkMax = new CANSparkMax(dConstants.rightRearID, MotorType.kBrushless);
 
   // defining encoders
-  public RelativeEncoder m_frontLeftDriveEncoder = frontLeftSparkMax.getEncoder();
-  public RelativeEncoder m_rearLeftDriveEncoder = rearLeftSparkMax.getEncoder();
-  public RelativeEncoder m_rearRightDriveEncoder = rearRightSparkMax.getEncoder();
-  public RelativeEncoder m_frontRightDriveEncoder = frontRightSparkMax.getEncoder();
+  public RelativeEncoder m_frontLeftEnc = frontLeftSparkMax.getEncoder();
+  public RelativeEncoder m_rearLeftEnc = rearLeftSparkMax.getEncoder();
+  public RelativeEncoder m_rearRightEnc = rearRightSparkMax.getEncoder();
+  public RelativeEncoder m_frontRightEnc = frontRightSparkMax.getEncoder();
+  // defining spark PID controllers
+  private SparkMaxPIDController m_frontLeftPIDFF = frontLeftSparkMax.getPIDController();
+  private SparkMaxPIDController m_rearLeftPIDFF = rearLeftSparkMax.getPIDController();
+  private SparkMaxPIDController m_rearRightPIDFF = rearRightSparkMax.getPIDController();
+  private SparkMaxPIDController m_frontRightPIDFF = frontRightSparkMax.getPIDController();
 
   // Locations of the wheels relative to the robot center.
-  Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381);
-  Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
-  Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
-  Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
+  Translation2d m_frontLeftLocation = dConstants.frontLeftWheel;
+  Translation2d m_frontRightLocation = dConstants.frontRightWheel;
+  Translation2d m_backLeftLocation = dConstants.rearLeftWheel;
+  Translation2d m_backRightLocation = dConstants.rearRightWheel;
+
   
-  // Defining mecanum drive kinematics
+  /*creating a mecanum drive kinematics object which contains
+  each of the four wheels position on the robot*/
   MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
     m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation
   );
 
+  //creating one object which contains each wheels rotational position
   MecanumDriveWheelPositions m_driveWheelPositions = new MecanumDriveWheelPositions(
-    m_frontLeftDriveEncoder.getPosition(), 
-    m_frontRightDriveEncoder.getPosition(), 
-    m_rearLeftDriveEncoder.getPosition(), 
-    m_rearRightDriveEncoder.getPosition());
+    m_frontLeftEnc.getPosition(), 
+    m_frontRightEnc.getPosition(), 
+    m_rearLeftEnc.getPosition(), 
+    m_rearRightEnc.getPosition());
 
+  //creating a mecanum drive odometry object, this returns the robot's estimated position on the field. 
   MecanumDriveOdometry m_driveOdometry = new MecanumDriveOdometry(m_kinematics, new Rotation2d(), m_driveWheelPositions);
 
-  MecanumDrive m_robotDrive = new MecanumDrive(frontLeftSparkMax, rearLeftSparkMax, frontRightSparkMax, rearRightSparkMax);
-
+  MecanumDrivePoseEstimator m_drivePoseEstimator = new MecanumDrivePoseEstimator(m_kinematics, new Rotation2d(), m_driveWheelPositions, new Pose2d(), 
+  new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // Kinematic estimate std deviations: X meters, Y meters, and RAD heading
+  new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01)); // Vision estimate std deviations: X meters, Y meters, and RAD heading
 
   Sensors m_sensors;
 
   private Field2d m_field = new Field2d();
 
-
   // Creating a simulated photonvision system
   SimVisionSystem simVision = new SimVisionSystem(
-      "photonvision",
-      VisionConstants.camDiagFOV,
+      "frontAprilTagCamera",
+      vConstants.camDiagFOV,
       new Transform3d(
-          new Translation3d(0, 0, VisionConstants.cameraHeightM), 
-          new Rotation3d()), VisionConstants.maxLEDRange, 
-          VisionConstants.camResolutionWidth, 
-          VisionConstants.camResolutionHeight, 
-          VisionConstants.minTargetAreaPIX);
+          new Translation3d(0, 0, vConstants.cameraHeightM), 
+          new Rotation3d()), vConstants.maxLEDRange, 
+          vConstants.camResolutionWidth, 
+          vConstants.camResolutionHeight, 
+          vConstants.minTargetAreaPIX);
 
   // Creates DriveSubsystem
   public DriveSubsystem(Sensors m_sensors) { 
 
+    //telling this class where to find the Sensors subsystem
     this.m_sensors = m_sensors;
 
-    // defining velocity conversion factor
-    m_frontLeftDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
-    m_frontRightDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
-    m_rearLeftDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
-    m_rearRightDriveEncoder.setVelocityConversionFactor(DriveConstants.velocityConversionFactor);
-
+    // defining all spark configs and burning it to flash memory. 
+    m_frontLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
+    m_frontRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
+    m_rearLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
+    m_rearRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
 
     frontRightSparkMax.setInverted(false);
     rearRightSparkMax.setInverted(false);
     frontLeftSparkMax.setInverted(true);
     rearLeftSparkMax.setInverted(true);
-    frontRightSparkMax.setSmartCurrentLimit(80);
-    frontLeftSparkMax.setSmartCurrentLimit(80);
-    rearRightSparkMax.setSmartCurrentLimit(80);
-    rearLeftSparkMax.setSmartCurrentLimit(80);
+
+    frontRightSparkMax.setSmartCurrentLimit(dConstants.driveSparkSmartCurrentLimit);
+    frontLeftSparkMax.setSmartCurrentLimit(dConstants.driveSparkSmartCurrentLimit);
+    rearRightSparkMax.setSmartCurrentLimit(dConstants.driveSparkSmartCurrentLimit);
+    rearLeftSparkMax.setSmartCurrentLimit(dConstants.driveSparkSmartCurrentLimit);
+
+    m_frontLeftPIDFF.setP(dConstants.sparkMAXVelocitykP);
+    m_frontRightPIDFF.setP(dConstants.sparkMAXVelocitykP);
+    m_rearLeftPIDFF.setP(dConstants.sparkMAXVelocitykP);
+    m_rearRightPIDFF.setP(dConstants.sparkMAXVelocitykP);
+
+    m_frontLeftPIDFF.setI(dConstants.sparkMAXVelocitykI);
+    m_frontRightPIDFF.setI(dConstants.sparkMAXVelocitykI);
+    m_rearLeftPIDFF.setI(dConstants.sparkMAXVelocitykI);
+    m_rearRightPIDFF.setI(dConstants.sparkMAXVelocitykI);
+
+    m_frontLeftPIDFF.setD(dConstants.sparkMAXVelocitykD);
+    m_frontRightPIDFF.setD(dConstants.sparkMAXVelocitykD);
+    m_rearLeftPIDFF.setD(dConstants.sparkMAXVelocitykD);
+    m_rearRightPIDFF.setD(dConstants.sparkMAXVelocitykD);
+
+    m_frontLeftPIDFF.setFF(dConstants.sparkMAXVelocitykF);
+    m_frontRightPIDFF.setFF(dConstants.sparkMAXVelocitykF);
+    m_rearLeftPIDFF.setFF(dConstants.sparkMAXVelocitykF);
+    m_rearRightPIDFF.setFF(dConstants.sparkMAXVelocitykF);
     
+    frontRightSparkMax.burnFlash();
+    frontLeftSparkMax.burnFlash();
+    rearRightSparkMax.burnFlash();
+    rearLeftSparkMax.burnFlash();
+
     // Defining simulated vision target
-    simVision.addSimVisionTarget(
-        new SimVisionTarget(FieldConstants.aprilTags.get(1), 
-          .1, .3, 1));
-      
+    simVision.addVisionTargets(m_sensors.aprilTagFieldLayout);
+
     // sending simulated field data to SmartDashboard
     SmartDashboard.putData("Field", m_field);
 
@@ -145,23 +188,58 @@ public class DriveSubsystem extends SubsystemBase {
 
   // reset DriveTrain encoders to 0
   public void resetDriveEncoders() {
-    m_frontLeftDriveEncoder.setPosition(0);
-    m_frontRightDriveEncoder.setPosition(0);
-    m_rearLeftDriveEncoder.setPosition(0);
-    m_rearRightDriveEncoder.setPosition(0);
+    m_frontLeftEnc.setPosition(0);
+    m_frontRightEnc.setPosition(0);
+    m_rearLeftEnc.setPosition(0);
+    m_rearRightEnc.setPosition(0);
   }
 
   public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
-    m_robotDrive.driveCartesian(xSpeed.getAsDouble(), -ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
-    m_robotDrive.setDeadband(.02);
+  
+  ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed.getAsDouble(), ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
+ 
+  double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontLeftMetersPerSecond;
+  double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontRightMetersPerSecond;
+  double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearRightMetersPerSecond;
+  double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearLeftMetersPerSecond;
+    
+  SmartDashboard.putNumber("frontLeftMetersPerSecond:", frontLeftMetersPerSecond);
+  SmartDashboard.putNumber("frontRightMetersPerSecond:", frontRightMetersPerSecond);
+  SmartDashboard.putNumber("rearLeftMetersPerSecond:", rearLeftMetersPerSecond);
+  SmartDashboard.putNumber("rearRightMetersPerSecond:", rearRightMetersPerSecond);
+  }
+
+  public void updateOdometry() {
+    //sends gyro heading and wheel positions to pose estimator
+    m_drivePoseEstimator.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
+    
+    //gets estimated photonvision pose
+    Optional<EstimatedRobotPose> result =
+      m_sensors.getEstimatedGlobalPose(m_drivePoseEstimator.getEstimatedPosition());
+
+    
+    if(result.isPresent()) {
+      //if there's a valid vision target, it's data is sent to the drive pose estimator
+      EstimatedRobotPose camPose = result.get();
+      m_drivePoseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
+      m_field.getObject("Cam Est Pos").setPose(camPose.estimatedPose.toPose2d());
+    } else {
+      //if there's no target, the camera is moved off screen. 
+      m_field.getObject("Cam Est Pos").setPose(new Pose2d(-100, -100, new Rotation2d()));
+    }
+
+    //updating the robots estimated pose on the field
+    m_field.setRobotPose(m_drivePoseEstimator.getEstimatedPosition());
   }
 
   @Override
   public void periodic() {
     
-    // pass telemetry data to get Odometry data
-    m_driveOdometry.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
-    m_field.setRobotPose(getPose());
+    //updating drive odometry with most recent wheel and gyro data
+    updateOdometry();
+
+
+    m_field.setRobotPose(m_driveOdometry.getPoseMeters());
 
   } // end void periodic
 
@@ -170,17 +248,11 @@ public class DriveSubsystem extends SubsystemBase {
 
      //update photonvision simulation
     simVision.processFrame(m_driveOdometry.getPoseMeters());
-    m_driveOdometry.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
-    m_field.setRobotPose(getPose());
 
-    
+    //sending simulated gyro heading to the main robot code
+    m_sensors.setSimNavXAngle(m_driveOdometry.getPoseMeters().getRotation().getDegrees());
 
-     //Debug info
-
-
-     //sending simulated gyro heading to the main robot code
-     m_sensors.setNavXAngle(getPose().getRotation().getDegrees()); //TODO
-
+    updateOdometry();
   } // end simulationPeriodic
 
   // returns the read position of the robot on the field

@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-//Programmed by Forrest Lasell during the 2022 FRC season for team 4643, Butte Built Bots
+//Programmed by Forrest Lasell during the 2023 FRC season for team 4643, Butte Built Bots
 
 package frc.robot.subsystems;
 
@@ -137,6 +137,7 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_rearRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
 
+
     frontRightSparkMax.setInverted(false);
     rearRightSparkMax.setInverted(false);
     frontLeftSparkMax.setInverted(true);
@@ -246,7 +247,7 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
 
-     //update photonvision simulation
+    //update photonvision simulation
     simVision.processFrame(m_driveOdometry.getPoseMeters());
 
     //sending simulated gyro heading to the main robot code

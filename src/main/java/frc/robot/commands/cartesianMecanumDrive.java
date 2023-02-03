@@ -9,6 +9,8 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.dConstants;
@@ -38,7 +40,7 @@ public class cartesianMecanumDrive extends CommandBase {
 
     m_expectedHeading = 0;
 
-    driveHeadingController.enableContinuousInput(0, 360);
+    driveHeadingPIDController.enableContinuousInput(0, 360);
     addRequirements(m_driveSubsystem);
   }
   // Called when the command is initially scheduled.

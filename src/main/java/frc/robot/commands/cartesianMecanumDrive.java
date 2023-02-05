@@ -23,7 +23,7 @@ public class cartesianMecanumDrive extends CommandBase {
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
-  private PIDController driveHeadingController = new PIDController(0.03, 0, 0.0, 0.02);
+  private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI, dConstants.steerkD, 0.02);
   private Sensors m_sensors;
 
   private double m_expectedHeading;
@@ -51,7 +51,7 @@ public class cartesianMecanumDrive extends CommandBase {
     double dha = driverHeadingAdjustment.getAsDouble();
     double headingAdjust;
     //maintaining minus sign
-    if(dha < 1) {
+    if(dha < 0) {
       headingAdjust = -MathUtil.applyDeadband(
       Math.sin(
         turnSlewRateLimiter.calculate(Math.abs(dha))),dConstants.inputDeadband);

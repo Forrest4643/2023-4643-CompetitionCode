@@ -19,16 +19,20 @@ public final class Constants {
         public static final int rightRearID = 3;
         public static final double inputDeadband = 0.08;
 
-        public static final Translation2d frontLeftWheel = new Translation2d(0.381, 0.381);
-        public static final Translation2d frontRightWheel = new Translation2d(0.381, -0.381);
-        public static final Translation2d rearLeftWheel = new Translation2d(-0.381, 0.381);
-        public static final Translation2d rearRightWheel = new Translation2d(-0.381, -0.381);
+        public static final Translation2d frontLeftWheel = new Translation2d(0.324, 0.219);
+        public static final Translation2d frontRightWheel = new Translation2d(0.324, -0.219);
+        public static final Translation2d rearLeftWheel = new Translation2d(-0.324, 0.219);
+        public static final Translation2d rearRightWheel = new Translation2d(-0.324, -0.219);
         public static final int driveSparkSmartCurrentLimit = 50; //Amps
 
-        public static final double sparkMAXVelocitykP = 0.005;
+        public static final double sparkMAXVelocitykP = 0.001;
         public static final double sparkMAXVelocitykI = 0;
-        public static final double sparkMAXVelocitykD = 0.001;
-        public static final double sparkMAXVelocitykF = 0.0038;
+        public static final double sparkMAXVelocitykD = 0.003;
+        public static final double sparkMAXVelocitykF = 0.005;
+
+        public static final double steerkP = 0.1;
+        public static final double steerkI = 0.0;
+        public static final double steerkD = 0.0;
 
         public static final double velocityConversionFactor = (1 / (10*2.33333)); //10:1 versaplanetary and 2.33~:1 pulley
         public static final double positionConversionFactor = 1;

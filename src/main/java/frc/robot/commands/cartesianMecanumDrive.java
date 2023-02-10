@@ -24,6 +24,7 @@ public class cartesianMecanumDrive extends CommandBase {
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
   private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI, dConstants.steerkD, 0.02);
+  private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(0.01, 0);
   private Sensors m_sensors;
 
   private double m_expectedHeading;
@@ -65,7 +66,7 @@ public class cartesianMecanumDrive extends CommandBase {
     m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (headingAdjust * 2), 0, 360);    
 
     //sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading); 
+    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading) + driveHeadingFF.calculate(driveHeadingController.getPositionError()); 
 
     //sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);

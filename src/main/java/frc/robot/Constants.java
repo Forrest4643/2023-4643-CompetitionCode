@@ -30,9 +30,9 @@ public final class Constants {
         public static final double sparkMAXVelocitykD = 0.003;
         public static final double sparkMAXVelocitykF = 0.005;
 
-        public static final double steerkP = 0.1;
+        public static final double steerkP = 0.03;
         public static final double steerkI = 0.0;
-        public static final double steerkD = 0.0;
+        public static final double steerkD = 0.001;
 
         public static final double velocityConversionFactor = (1 / (10*2.33333)); //10:1 versaplanetary and 2.33~:1 pulley
         public static final double positionConversionFactor = 1;

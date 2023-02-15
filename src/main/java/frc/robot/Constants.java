@@ -37,6 +37,12 @@ public final class Constants {
         public static final double velocityConversionFactor = (1 / (10*2.33333)); //10:1 versaplanetary and 2.33~:1 pulley
         public static final double positionConversionFactor = 1;
     }
+
+    public static final class aConstants {
+        public static final int armID = 5;
+        public static final int teleID = 6;
+
+    }
     //Pneumatic constants
     public static final class pConstants {
         public static final int compressorID = 0;
@@ -55,7 +61,7 @@ public final class Constants {
 
     }
     //Auto constants
-    public static final class aConstants {
+    public static final class autoConstants {
 
         public static final double kMaxSpeedMetersPerSecond = 3.0;
         public static final double kMaxAccelerationMetersPerSecondSquared = 1.0;

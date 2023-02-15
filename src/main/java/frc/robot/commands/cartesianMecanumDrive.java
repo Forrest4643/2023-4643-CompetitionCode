@@ -66,7 +66,8 @@ public class cartesianMecanumDrive extends CommandBase {
     m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (headingAdjust * 2), 0, 360);    
 
     //sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading) + driveHeadingFF.calculate(driveHeadingController.getPositionError()); 
+    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading) 
+      + driveHeadingFF.calculate(driveHeadingController.getPositionError()); 
 
     //sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput);

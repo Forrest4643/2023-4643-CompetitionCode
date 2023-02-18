@@ -32,7 +32,7 @@ public final class Constants {
 
         public static final double steerkP = 0.03;
         public static final double steerkI = 0.0;
-        public static final double steerkD = 0.001;
+        public static final double steerkD = 0.00003;
 
         public static final double velocityConversionFactor = (1 / (10*2.33333)); //10:1 versaplanetary and 2.33~:1 pulley
         public static final double positionConversionFactor = 1;

@@ -63,7 +63,7 @@ public class cartesianMecanumDrive extends CommandBase {
     }
 
     //Takes input from the driver and adjusts the robot's expected heading
-    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (headingAdjust * 2), 0, 360);    
+    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (headingAdjust * 4), 0, 360);    
 
     //sending heading to PID controller
     double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading) 

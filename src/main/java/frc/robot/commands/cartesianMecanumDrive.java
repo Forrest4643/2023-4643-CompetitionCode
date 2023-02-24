@@ -24,7 +24,7 @@ public class cartesianMecanumDrive extends CommandBase {
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
   private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI, dConstants.steerkD, 0.02);
-  private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(0.01, 0);
+  private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(dConstants.steerkF, 0);
   private Sensors m_sensors;
 
   private double m_expectedHeading;

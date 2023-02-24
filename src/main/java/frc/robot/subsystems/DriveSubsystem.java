@@ -13,12 +13,16 @@ import frc.robot.FieldConstants;
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.dConstants;
 import frc.robot.Constants.vConstants;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.io.IOException;
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -27,6 +31,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 
 import org.photonvision.SimVisionSystem;
 import org.photonvision.SimVisionTarget;
@@ -56,6 +61,8 @@ import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -64,10 +71,36 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
-public class DriveSubsystem extends SubsystemBase {
+public class DriveSubsystem extends SubsystemBase implements Loggable {
+  
 
+  private double frontLeftRPM = 0;
 
+  //@Log.Graph
+  private double frontRightRPM;
+
+  //@Log.Graph
+  private double rearLeftRPM;
+
+  //@Log.Graph
+  private double rearRightRPM;
+
+  @Log.Graph
+  private double desiredFrontLeftRPM;
+
+  //@Log.Graph
+  private double desiredFrontRightRPM;
+
+  //@Log.Graph
+  private double desiredRearLeftRPM;
+
+  //@Log.Graph
+  private double desiredRearRightRPM;
+ 
   // defining motor names and CAN ID's
   private final CANSparkMax frontLeftSparkMax = new CANSparkMax(dConstants.leftFrontID, MotorType.kBrushless);
   private final CANSparkMax rearLeftSparkMax = new CANSparkMax(dConstants.leftRearID, MotorType.kBrushless);
@@ -80,6 +113,7 @@ public class DriveSubsystem extends SubsystemBase {
   public RelativeEncoder m_rearRightEnc = rearRightSparkMax.getEncoder();
   public RelativeEncoder m_frontRightEnc = frontRightSparkMax.getEncoder();
   // defining spark PID controllers
+  
   private SparkMaxPIDController m_frontLeftPIDFF = frontLeftSparkMax.getPIDController();
   private SparkMaxPIDController m_rearLeftPIDFF = rearLeftSparkMax.getPIDController();
   private SparkMaxPIDController m_rearRightPIDFF = rearRightSparkMax.getPIDController();
@@ -133,6 +167,9 @@ public class DriveSubsystem extends SubsystemBase {
     //telling this class where to find the Sensors subsystem
     this.m_sensors = m_sensors;
 
+    
+    
+
     // defining all spark configs and burning it to flash memory. 
     m_frontLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_frontRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
@@ -150,26 +187,53 @@ public class DriveSubsystem extends SubsystemBase {
     rearRightSparkMax.setSmartCurrentLimit(dConstants.driveSparkSmartCurrentLimit);
     rearLeftSparkMax.setSmartCurrentLimit(dConstants.driveSparkSmartCurrentLimit);
 
-    m_frontLeftPIDFF.setP(dConstants.sparkMAXVelocitykP);
-    m_frontRightPIDFF.setP(dConstants.sparkMAXVelocitykP);
-    m_rearLeftPIDFF.setP(dConstants.sparkMAXVelocitykP);
-    m_rearRightPIDFF.setP(dConstants.sparkMAXVelocitykP);
+    m_frontLeftPIDFF.setP(dConstants.sparkMAXVelocitykP, 0);
+    m_frontRightPIDFF.setP(dConstants.sparkMAXVelocitykP, 0);
+    m_rearLeftPIDFF.setP(dConstants.sparkMAXVelocitykP, 0);
+    m_rearRightPIDFF.setP(dConstants.sparkMAXVelocitykP, 0);
 
-    m_frontLeftPIDFF.setI(dConstants.sparkMAXVelocitykI);
-    m_frontRightPIDFF.setI(dConstants.sparkMAXVelocitykI);
-    m_rearLeftPIDFF.setI(dConstants.sparkMAXVelocitykI);
-    m_rearRightPIDFF.setI(dConstants.sparkMAXVelocitykI);
+    m_frontLeftPIDFF.setI(dConstants.sparkMAXVelocitykI, 0);
+    m_frontRightPIDFF.setI(dConstants.sparkMAXVelocitykI, 0);
+    m_rearLeftPIDFF.setI(dConstants.sparkMAXVelocitykI, 0);
+    m_rearRightPIDFF.setI(dConstants.sparkMAXVelocitykI, 0);
 
-    m_frontLeftPIDFF.setD(dConstants.sparkMAXVelocitykD);
-    m_frontRightPIDFF.setD(dConstants.sparkMAXVelocitykD);
-    m_rearLeftPIDFF.setD(dConstants.sparkMAXVelocitykD);
-    m_rearRightPIDFF.setD(dConstants.sparkMAXVelocitykD);
+    m_frontLeftPIDFF.setD(dConstants.sparkMAXVelocitykD, 0);
+    m_frontRightPIDFF.setD(dConstants.sparkMAXVelocitykD, 0);
+    m_rearLeftPIDFF.setD(dConstants.sparkMAXVelocitykD, 0);
+    m_rearRightPIDFF.setD(dConstants.sparkMAXVelocitykD, 0);
 
-    m_frontLeftPIDFF.setFF(dConstants.sparkMAXVelocitykF);
-    m_frontRightPIDFF.setFF(dConstants.sparkMAXVelocitykF);
-    m_rearLeftPIDFF.setFF(dConstants.sparkMAXVelocitykF);
-    m_rearRightPIDFF.setFF(dConstants.sparkMAXVelocitykF);
-    
+    m_frontLeftPIDFF.setFF(dConstants.sparkMAXVelocitykF, 0);
+    m_frontRightPIDFF.setFF(dConstants.sparkMAXVelocitykF, 0);
+    m_rearLeftPIDFF.setFF(dConstants.sparkMAXVelocitykF, 0);
+    m_rearRightPIDFF.setFF(dConstants.sparkMAXVelocitykF, 0);
+
+    m_frontLeftPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
+    m_frontRightPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
+    m_rearRightPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
+    m_rearLeftPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);  
+
+    m_frontLeftPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+    m_frontRightPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+    m_rearRightPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+    m_rearLeftPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+
+    m_frontLeftPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
+    m_frontRightPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
+    m_rearRightPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
+    m_rearLeftPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
+
+    m_frontLeftPIDFF.setSmartMotionMaxVelocity(570, 0);
+    m_frontRightPIDFF.setSmartMotionMaxVelocity(570, 0);
+    m_rearRightPIDFF.setSmartMotionMaxVelocity(570, 0);
+    m_rearLeftPIDFF.setSmartMotionMaxVelocity(570, 0);
+
+  
+    m_frontLeftPIDFF.setSmartMotionMinOutputVelocity(0, 0);
+    m_frontRightPIDFF.setSmartMotionMinOutputVelocity(0, 0);
+    m_rearRightPIDFF.setSmartMotionMinOutputVelocity(0, 0);
+    m_rearLeftPIDFF.setSmartMotionMinOutputVelocity(0, 0);
+
+
     frontRightSparkMax.burnFlash();
     frontLeftSparkMax.burnFlash();
     rearRightSparkMax.burnFlash();
@@ -206,20 +270,21 @@ public class DriveSubsystem extends SubsystemBase {
   double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearRightMetersPerSecond;
   double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearLeftMetersPerSecond;
 
-  m_frontLeftPIDFF.setReference(metersPerSecondToRPM(frontLeftMetersPerSecond), ControlType.kVelocity);
-  m_frontRightPIDFF.setReference(metersPerSecondToRPM(frontRightMetersPerSecond), ControlType.kVelocity);
-  m_rearRightPIDFF.setReference(metersPerSecondToRPM(rearRightMetersPerSecond), ControlType.kVelocity);
-  m_rearLeftPIDFF.setReference(metersPerSecondToRPM(rearLeftMetersPerSecond), ControlType.kVelocity);
+  desiredFrontRightRPM = metersPerSecondToRPM(frontRightMetersPerSecond);
+  desiredFrontLeftRPM = metersPerSecondToRPM(frontLeftMetersPerSecond);
+  desiredRearLeftRPM = metersPerSecondToRPM(rearLeftMetersPerSecond);
+  desiredRearRightRPM = metersPerSecondToRPM(rearRightMetersPerSecond);
 
-  SmartDashboard.putNumber("desiredFrontLeftRPM:", metersPerSecondToRPM(frontLeftMetersPerSecond));
-  SmartDashboard.putNumber("desiredFrontRightRPM", metersPerSecondToRPM(frontRightMetersPerSecond));
-  SmartDashboard.putNumber("desiredRearLeftRPM", metersPerSecondToRPM(rearLeftMetersPerSecond));
-  SmartDashboard.putNumber("desiredRearRightRPM", metersPerSecondToRPM(rearRightMetersPerSecond));
+  m_frontLeftPIDFF.setReference(desiredFrontLeftRPM, ControlType.kSmartVelocity, 0);
+  m_frontRightPIDFF.setReference(desiredFrontRightRPM, ControlType.kSmartVelocity, 0);
+  m_rearRightPIDFF.setReference(desiredRearRightRPM, ControlType.kSmartVelocity, 0);
+  m_rearLeftPIDFF.setReference(desiredRearLeftRPM, ControlType.kSmartVelocity, 0);
 
-  SmartDashboard.putNumber("frontRightRPM", m_frontRightEnc.getVelocity());
-  SmartDashboard.putNumber("frontLeftRPM", m_frontLeftEnc.getVelocity());
-  SmartDashboard.putNumber("rearRightRPM", m_rearRightEnc.getVelocity());
-  SmartDashboard.putNumber("rearLeftRPM", m_rearLeftEnc.getVelocity());
+  frontLeftRPM = frontLeftSparkMax.getEncoder().getVelocity();
+  frontRightRPM = frontRightSparkMax.getEncoder().getVelocity();
+  rearRightRPM = rearRightSparkMax.getEncoder().getVelocity();
+  rearLeftRPM = rearLeftSparkMax.getEncoder().getVelocity();
+
   }
 
   public void stopMotors() {
@@ -231,11 +296,13 @@ public class DriveSubsystem extends SubsystemBase {
   
 
   public void updateOdometry() {
+
+    System.out.println(m_frontLeftEnc.getPosition());
     //sends gyro heading and wheel positions to pose estimator
     m_drivePoseEstimator.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
     
-    //gets estimated photonvision pose
-    Optional<EstimatedRobotPose> result =
+      //gets estimated photonvision pose
+      Optional<EstimatedRobotPose> result =
       m_sensors.getEstimatedGlobalPose(m_drivePoseEstimator.getEstimatedPosition());
 
     
@@ -264,7 +331,6 @@ public class DriveSubsystem extends SubsystemBase {
     updateOdometry();
 
 
-    m_field.setRobotPose(m_driveOdometry.getPoseMeters());
 
   } // end void periodic
 

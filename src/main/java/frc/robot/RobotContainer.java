@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
+import io.github.oblarg.oblog.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -56,9 +57,14 @@ public class RobotContainer {
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
   private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors, () -> -m_driveController.getRawAxis(0), 
-    () -> m_driveController.getRawAxis(1), () -> -m_driveController.getRawAxis(4));
+    () -> -m_driveController.getRawAxis(1), () -> -m_driveController.getRawAxis(3));
 
   public RobotContainer() {
+
+    // The first argument is the root container
+    // The second argument is whether logging and config should be given separate tabs
+    Logger.configureLoggingAndConfig(this, false);
+
     // Configure the button bindings
     configureButtonBindings();
     try {
@@ -69,6 +75,7 @@ public class RobotContainer {
     }
 
     m_driveSubsystem.setDefaultCommand(m_cartesianMecanumDrive);
+
   }
 
   private void configureButtonBindings() {

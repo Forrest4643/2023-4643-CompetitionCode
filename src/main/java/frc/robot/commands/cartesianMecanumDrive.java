@@ -18,13 +18,13 @@ import frc.robot.Constants.dConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
 
-
 public class cartesianMecanumDrive extends CommandBase {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
-  private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI, dConstants.steerkD, 0.02);
+  private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI,
+      dConstants.steerkD, 0.02);
   private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(dConstants.steerkF, 0);
   private Sensors m_sensors;
 
@@ -34,9 +34,9 @@ public class cartesianMecanumDrive extends CommandBase {
 
   private Translation2d m_COR;
 
-
   /** Creates a new cartesianMecanumDrive. */
-  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_sensors, DoubleSupplier speedX, DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
+  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_sensors, DoubleSupplier speedX,
+      DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.m_sensors = m_sensors;
     this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), dConstants.inputDeadband) * 1.4);
@@ -47,46 +47,54 @@ public class cartesianMecanumDrive extends CommandBase {
     driveHeadingController.enableContinuousInput(0, 360);
     addRequirements(m_driveSubsystem);
   }
+
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     double dha = driverHeadingAdjustment.getAsDouble();
     double dhaOUT;
-    //maintaining minus sign
-    if(dha < 0) {
+    // maintaining minus sign
+    if (dha < 0) {
       dhaOUT = -MathUtil.applyDeadband(
-      Math.sin(
-        turnSlewRateLimiter.calculate(Math.abs(dha))),dConstants.inputDeadband);
+          Math.sin(
+              turnSlewRateLimiter.calculate(Math.abs(dha))),
+          dConstants.inputDeadband);
     } else {
       dhaOUT = MathUtil.applyDeadband(
-      Math.sin(
-        turnSlewRateLimiter.calculate(Math.abs(dha))),dConstants.inputDeadband);
+          Math.sin(
+              turnSlewRateLimiter.calculate(Math.abs(dha))),
+          dConstants.inputDeadband);
     }
 
-    //Takes input from the driver and adjusts the robot's expected heading
-    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (dhaOUT * 4), 0, 360);    
+    // Takes input from the driver and adjusts the robot's expected heading
+    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (dhaOUT * 4), 0, 360);
 
-    //sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading) 
-      + driveHeadingFF.calculate(driveHeadingController.getPositionError()); 
-
+    // sending heading to PID controller
+    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading)
+        + driveHeadingFF.calculate(driveHeadingController.getPositionError());
 
     switch (m_rotationSelect) {
-      case 1: m_COR = new Translation2d(0, 0.5); //Forward center of rotation
-      case 2: m_COR = new Translation2d(-0.5, 0); //Left center of rotation
-      case 3: m_COR = new Translation2d(0.5, 0); //Right center of rotation
-      case 4: m_COR = new Translation2d(0, -0.5); //Back center of rotation
-      default: m_COR = new Translation2d(0, 0); //Default to centered
+      case 1:
+        m_COR = new Translation2d(0, 0.5); // Forward center of rotation
+      case 2:
+        m_COR = new Translation2d(-0.5, 0); // Left center of rotation
+      case 3:
+        m_COR = new Translation2d(0.5, 0); // Right center of rotation
+      case 4:
+        m_COR = new Translation2d(0, -0.5); // Back center of rotation
+      default:
+        m_COR = new Translation2d(0, 0); // Default to centered
     }
 
-    //sending outputs to drive controller
+    // sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput, m_COR);
 
-    //debug info
+    // debug info
     SmartDashboard.putNumber("speedX", speedX.getAsDouble());
     SmartDashboard.putNumber("speedY", speedY.getAsDouble());
     SmartDashboard.putNumber("rotationOutput", rotationOutput);

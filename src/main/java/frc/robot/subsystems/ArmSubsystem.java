@@ -25,9 +25,6 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
 
   public ArmFeedforward armFFcontroller = new ArmFeedforward(0, 0.37, 3.63, 0.03);
 
-
-
-
   /** Creates a new ArmSubsystem. */
   public ArmSubsystem(Sensors m_sensors) {
     super(
@@ -38,9 +35,9 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
             0,
             // The motion profile constraints
             new TrapezoidProfile.Constraints(0, 0)));
-            
-        this.m_sensors = m_sensors;
-        armEncoder.setPositionConversionFactor(0.00537109374);
+
+    this.m_sensors = m_sensors;
+    armEncoder.setPositionConversionFactor(0.00537109374);
   }
 
   @Override

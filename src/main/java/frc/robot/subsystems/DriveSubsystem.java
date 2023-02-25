@@ -6,22 +6,14 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.dConstants;
 import frc.robot.Constants.vConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
-import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
-import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import java.io.IOException;
-import java.sql.Array;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -33,77 +25,55 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 
 import org.photonvision.SimVisionSystem;
-import org.photonvision.SimVisionTarget;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.RobotPoseEstimator;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.wpilibj.AnalogGyro;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.drive.MecanumDrive;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 public class DriveSubsystem extends SubsystemBase implements Loggable {
-  
-
+  @Log.Graph
   private double frontLeftRPM = 0;
 
-  //@Log.Graph
+  // @Log.Graph
   private double frontRightRPM;
 
-  //@Log.Graph
+  // @Log.Graph
   private double rearLeftRPM;
 
-  //@Log.Graph
+  // @Log.Graph
   private double rearRightRPM;
 
   @Log.Graph
-  private double desiredFrontLeftRPM;
+  private double desiredFrontLeftRPM = 0;
 
-  //@Log.Graph
+  // @Log.Graph
   private double desiredFrontRightRPM;
 
-  //@Log.Graph
+  // @Log.Graph
   private double desiredRearLeftRPM;
 
-  //@Log.Graph
+  // @Log.Graph
   private double desiredRearRightRPM;
- 
+
   // defining motor names and CAN ID's
+  @Log.MotorController
   private final CANSparkMax frontLeftSparkMax = new CANSparkMax(dConstants.leftFrontID, MotorType.kBrushless);
+  @Log.MotorController
   private final CANSparkMax rearLeftSparkMax = new CANSparkMax(dConstants.leftRearID, MotorType.kBrushless);
+  @Log.MotorController
   private final CANSparkMax frontRightSparkMax = new CANSparkMax(dConstants.rightFrontID, MotorType.kBrushless);
+  @Log.MotorController
   private final CANSparkMax rearRightSparkMax = new CANSparkMax(dConstants.rightRearID, MotorType.kBrushless);
 
   // defining encoders
@@ -112,7 +82,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   public RelativeEncoder m_rearRightEnc = rearRightSparkMax.getEncoder();
   public RelativeEncoder m_frontRightEnc = frontRightSparkMax.getEncoder();
   // defining spark PID controllers
-  
+
   private SparkMaxPIDController m_frontLeftPIDFF = frontLeftSparkMax.getPIDController();
   private SparkMaxPIDController m_rearLeftPIDFF = rearLeftSparkMax.getPIDController();
   private SparkMaxPIDController m_rearRightPIDFF = rearRightSparkMax.getPIDController();
@@ -128,26 +98,27 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
   Translation2d frontRotation = new Translation2d(0, .5);
 
-  
-  /*creating a mecanum drive kinematics object which contains
-  each of the four wheels position on the robot*/
+  /*
+   * creating a mecanum drive kinematics object which contains
+   * each of the four wheels position on the robot
+   */
   MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
-    m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation
-  );
+      m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
 
-  //creating one object which contains each wheels rotational position
-  MecanumDriveWheelPositions m_driveWheelPositions = new MecanumDriveWheelPositions(
-    m_frontLeftEnc.getPosition(), 
-    m_frontRightEnc.getPosition(), 
-    m_rearLeftEnc.getPosition(), 
-    m_rearRightEnc.getPosition());
+  // creating one object which contains each wheels rotational position
+  MecanumDriveWheelPositions m_driveWheelPositions;
 
-  //creating a mecanum drive odometry object, this returns the robot's estimated position on the field. 
-  MecanumDriveOdometry m_driveOdometry = new MecanumDriveOdometry(m_kinematics, new Rotation2d(), m_driveWheelPositions);
+  // creating a mecanum drive odometry object, this returns the robot's estimated
+  // position on the field.
+  MecanumDriveOdometry m_driveOdometry = new MecanumDriveOdometry(m_kinematics, new Rotation2d(),
+      m_driveWheelPositions);
 
-  MecanumDrivePoseEstimator m_drivePoseEstimator = new MecanumDrivePoseEstimator(m_kinematics, new Rotation2d(), m_driveWheelPositions, new Pose2d(), 
-  new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // Kinematic estimate std deviations: X meters, Y meters, and RAD heading
-  new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01)); // Vision estimate std deviations: X meters, Y meters, and RAD heading
+  MecanumDrivePoseEstimator m_drivePoseEstimator = new MecanumDrivePoseEstimator(m_kinematics, new Rotation2d(),
+      m_driveWheelPositions, new Pose2d(),
+      new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // Kinematic estimate std deviations: X meters, Y
+                                                                   // meters, and RAD heading
+      new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01)); // Vision estimate std deviations: X meters, Y
+                                                                    // meters, and RAD heading
 
   Sensors m_sensors;
 
@@ -158,20 +129,20 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
       "frontAprilTagCamera",
       vConstants.camDiagFOV,
       new Transform3d(
-          new Translation3d(0, 0, vConstants.cameraHeightM), 
-          new Rotation3d()), vConstants.maxLEDRange, 
-          vConstants.camResolutionWidth, 
-          vConstants.camResolutionHeight, 
-          vConstants.minTargetAreaPIX);
+          new Translation3d(0, 0, vConstants.cameraHeightM),
+          new Rotation3d()),
+      vConstants.maxLEDRange,
+      vConstants.camResolutionWidth,
+      vConstants.camResolutionHeight,
+      vConstants.minTargetAreaPIX);
 
   // Creates DriveSubsystem
-  public DriveSubsystem(Sensors m_sensors) { 
+  public DriveSubsystem(Sensors m_sensors) {
 
-    //telling this class where to find the Sensors subsystem
+    // telling this class where to find the Sensors subsystem
     this.m_sensors = m_sensors;
 
-    
-    // defining all spark configs and burning it to flash memory. 
+    // defining all spark configs and burning it to flash memory.
     m_frontLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_frontRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_rearLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
@@ -215,7 +186,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     m_frontLeftPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
     m_frontRightPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
     m_rearRightPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
-    m_rearLeftPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);  
+    m_rearLeftPIDFF.setSmartMotionMaxAccel(dConstants.wheelRPMaccel, 0);
 
     m_frontLeftPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
     m_frontRightPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
@@ -232,12 +203,10 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     m_rearRightPIDFF.setSmartMotionMaxVelocity(570, 0);
     m_rearLeftPIDFF.setSmartMotionMaxVelocity(570, 0);
 
-  
     m_frontLeftPIDFF.setSmartMotionMinOutputVelocity(0, 0);
     m_frontRightPIDFF.setSmartMotionMinOutputVelocity(0, 0);
     m_rearRightPIDFF.setSmartMotionMinOutputVelocity(0, 0);
     m_rearLeftPIDFF.setSmartMotionMinOutputVelocity(0, 0);
-
 
     frontRightSparkMax.burnFlash();
     frontLeftSparkMax.burnFlash();
@@ -246,12 +215,12 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
     // Defining simulated vision target
     simVision.addVisionTargets(m_sensors.aprilTagFieldLayout);
+    
 
     // sending simulated field data to SmartDashboard
     SmartDashboard.putData("Field", m_field);
 
   } // end Public DriveSubsystem
-
 
   public void DriveSiminit() {
     // this runs once at the start of Simulation
@@ -266,30 +235,31 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     m_rearRightEnc.setPosition(0);
   }
 
-  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed, Translation2d COR) {
-  
-  ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds
-    (xSpeed.getAsDouble(), ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
- 
-  double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontLeftMetersPerSecond;
-  double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontRightMetersPerSecond;
-  double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearRightMetersPerSecond;
-  double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearLeftMetersPerSecond;
+  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed,
+      Translation2d COR) {
 
-  desiredFrontRightRPM = metersPerSecondToRPM(frontRightMetersPerSecond);
-  desiredFrontLeftRPM = metersPerSecondToRPM(frontLeftMetersPerSecond);
-  desiredRearLeftRPM = metersPerSecondToRPM(rearLeftMetersPerSecond);
-  desiredRearRightRPM = metersPerSecondToRPM(rearRightMetersPerSecond);
+    ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed.getAsDouble(), ySpeed.getAsDouble(),
+        rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
 
-  m_frontLeftPIDFF.setReference(desiredFrontLeftRPM, ControlType.kSmartVelocity, 0);
-  m_frontRightPIDFF.setReference(desiredFrontRightRPM, ControlType.kSmartVelocity, 0);
-  m_rearRightPIDFF.setReference(desiredRearRightRPM, ControlType.kSmartVelocity, 0);
-  m_rearLeftPIDFF.setReference(desiredRearLeftRPM, ControlType.kSmartVelocity, 0);
+    double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontLeftMetersPerSecond;
+    double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontRightMetersPerSecond;
+    double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearRightMetersPerSecond;
+    double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearLeftMetersPerSecond;
 
-  frontLeftRPM = frontLeftSparkMax.getEncoder().getVelocity();
-  frontRightRPM = frontRightSparkMax.getEncoder().getVelocity();
-  rearRightRPM = rearRightSparkMax.getEncoder().getVelocity();
-  rearLeftRPM = rearLeftSparkMax.getEncoder().getVelocity();
+    desiredFrontRightRPM = metersPerSecondToRPM(frontRightMetersPerSecond);
+    desiredFrontLeftRPM = metersPerSecondToRPM(frontLeftMetersPerSecond);
+    desiredRearLeftRPM = metersPerSecondToRPM(rearLeftMetersPerSecond);
+    desiredRearRightRPM = metersPerSecondToRPM(rearRightMetersPerSecond);
+
+    m_frontLeftPIDFF.setReference(desiredFrontLeftRPM, ControlType.kSmartVelocity, 0);
+    m_frontRightPIDFF.setReference(desiredFrontRightRPM, ControlType.kSmartVelocity, 0);
+    m_rearRightPIDFF.setReference(desiredRearRightRPM, ControlType.kSmartVelocity, 0);
+    m_rearLeftPIDFF.setReference(desiredRearLeftRPM, ControlType.kSmartVelocity, 0);
+
+    frontLeftRPM = frontLeftSparkMax.getEncoder().getVelocity();
+    frontRightRPM = frontRightSparkMax.getEncoder().getVelocity();
+    rearRightRPM = rearRightSparkMax.getEncoder().getVelocity();
+    rearLeftRPM = rearLeftSparkMax.getEncoder().getVelocity();
 
   }
 
@@ -299,30 +269,34 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     rearLeftSparkMax.set(0);
     rearRightSparkMax.set(0);
   }
-  
 
   public void updateOdometry() {
 
-    System.out.println(m_frontLeftEnc.getPosition());
-    //sends gyro heading and wheel positions to pose estimator
-    m_drivePoseEstimator.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
-    
-      //gets estimated photonvision pose
-      Optional<EstimatedRobotPose> result =
-      m_sensors.getEstimatedGlobalPose(m_drivePoseEstimator.getEstimatedPosition());
+    m_driveWheelPositions = new MecanumDriveWheelPositions(
+        m_frontLeftEnc.getPosition(),
+        m_frontRightEnc.getPosition(),
+        m_rearLeftEnc.getPosition(),
+        m_rearRightEnc.getPosition());
 
-    
-    if(result.isPresent()) {
-      //if there's a valid vision target, it's data is sent to the drive pose estimator
+    // sends gyro heading and wheel positions to pose estimator
+    m_drivePoseEstimator.update(m_sensors.navXRotation2d(), m_driveWheelPositions);
+
+    // gets estimated photonvision pose
+    Optional<EstimatedRobotPose> result = m_sensors.getEstimatedGlobalPose(m_drivePoseEstimator.getEstimatedPosition());
+
+    if (result.isPresent()) {
+      // if there's a valid vision target, it's data is sent to the drive pose
+      // estimator
       EstimatedRobotPose camPose = result.get();
-      m_drivePoseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
+      m_drivePoseEstimator.addVisionMeasurement
+        (camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
       m_field.getObject("Cam Est Pos").setPose(camPose.estimatedPose.toPose2d());
     } else {
-      //if there's no target, the camera is moved off screen. 
+      // if there's no target, the camera is moved off screen.
       m_field.getObject("Cam Est Pos").setPose(new Pose2d(-100, -100, new Rotation2d()));
     }
 
-    //updating the robots estimated pose on the field
+    // updating the robots estimated pose on the field
     m_field.setRobotPose(m_drivePoseEstimator.getEstimatedPosition());
   }
 
@@ -332,21 +306,19 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
   @Override
   public void periodic() {
-    
-    //updating drive odometry with most recent wheel and gyro data
+
+    // updating drive odometry with most recent wheel and gyro data
     updateOdometry();
-
-
 
   } // end void periodic
 
   @Override
   public void simulationPeriodic() {
 
-    //update photonvision simulation
+    // update photonvision simulation
     simVision.processFrame(m_driveOdometry.getPoseMeters());
 
-    //sending simulated gyro heading to the main robot code
+    // sending simulated gyro heading to the main robot code
     m_sensors.setSimNavXAngle(m_driveOdometry.getPoseMeters().getRotation().getDegrees());
 
     updateOdometry();

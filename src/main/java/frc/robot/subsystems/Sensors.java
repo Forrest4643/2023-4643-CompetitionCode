@@ -78,13 +78,17 @@ public class Sensors extends SubsystemBase {
      // sends WPI provided AprilTag locations to the PhotonVision field layout object
     try {
       this.aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+
+      // Construct PhotonPoseEstimator
+      this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP, frontCamera, robotToFrontCam);
+      photonFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+      
     } catch (IOException e) {
       DriverStation.reportError("Error loading AprilTagFieldLayout in Sensors:" + e.getMessage(), true);
+      photonFrontPoseEstimator = null;
     }
 
-    // Construct PhotonPoseEstimator
-    this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, frontCamera, robotToFrontCam);
-    //PhotonPoseEstimator photonRearPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, rearCamera, robotToRearCam);
+    
 
   }
 
@@ -149,9 +153,11 @@ public class Sensors extends SubsystemBase {
   }
 
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
-      
-    photonFrontPoseEstimator.setReferencePose(prevEstimatedRobotPose);
+      if (photonFrontPoseEstimator == null) {
+        return Optional.empty();
+      }
 
+    photonFrontPoseEstimator.setReferencePose(prevEstimatedRobotPose);
     return photonFrontPoseEstimator.update();
   }
 

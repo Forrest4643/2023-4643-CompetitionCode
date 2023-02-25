@@ -33,6 +33,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import io.github.oblarg.oblog.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -98,6 +99,14 @@ public class RobotContainer {
     new JoystickButton(m_driveController, XboxController.Button.kLeftStick.value)
       .onTrue(new InstantCommand(m_cartesianMecanumDrive::centeredRotation)); //Centered rotation on left stick press
   }
+
+public Command getAutonomousCommand() {
+  return m_cartesianMecanumDrive;
+
+  new MecanumControllerCommand(Auto1, m_driveSubsystem.getPose(), m_driveSubsystem.m_kinematics, new PIDController(0, 0, 0), new PIDController(0, 0, 0), new PIDController(0, 0, 0), 1, m_driveSubsystem.cartesianMecanumDrive(xSpeed, null, null, null);, null)
+
+}
+
 }
 
 

@@ -46,34 +46,31 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   private double frontLeftRPM = 0;
 
   // @Log.Graph
-  private double frontRightRPM;
+  private double frontRightRPM = 0;
 
   // @Log.Graph
-  private double rearLeftRPM;
+  private double rearLeftRPM = 0;
 
   // @Log.Graph
-  private double rearRightRPM;
+  private double rearRightRPM = 0;
 
   @Log.Graph
   private double desiredFrontLeftRPM = 0;
 
   // @Log.Graph
-  private double desiredFrontRightRPM;
+  private double desiredFrontRightRPM = 0;
 
   // @Log.Graph
-  private double desiredRearLeftRPM;
+  private double desiredRearLeftRPM = 0;
 
   // @Log.Graph
-  private double desiredRearRightRPM;
+  private double desiredRearRightRPM = 0;
 
   // defining motor names and CAN ID's
-  @Log.MotorController
+  
   private final CANSparkMax frontLeftSparkMax = new CANSparkMax(dConstants.leftFrontID, MotorType.kBrushless);
-  @Log.MotorController
   private final CANSparkMax rearLeftSparkMax = new CANSparkMax(dConstants.leftRearID, MotorType.kBrushless);
-  @Log.MotorController
   private final CANSparkMax frontRightSparkMax = new CANSparkMax(dConstants.rightFrontID, MotorType.kBrushless);
-  @Log.MotorController
   private final CANSparkMax rearRightSparkMax = new CANSparkMax(dConstants.rightRearID, MotorType.kBrushless);
 
   // defining encoders
@@ -94,19 +91,15 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   Translation2d m_backLeftLocation = dConstants.rearLeftWheel;
   Translation2d m_backRightLocation = dConstants.rearRightWheel;
 
-  Translation2d centeredRotation = new Translation2d(0, 0);
-
-  Translation2d frontRotation = new Translation2d(0, .5);
-
   /*
    * creating a mecanum drive kinematics object which contains
    * each of the four wheels position on the robot
    */
-  MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
+  public MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
       m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
 
   // creating one object which contains each wheels rotational position
-  MecanumDriveWheelPositions m_driveWheelPositions;
+  MecanumDriveWheelPositions m_driveWheelPositions = new MecanumDriveWheelPositions();
 
   // creating a mecanum drive odometry object, this returns the robot's estimated
   // position on the field.

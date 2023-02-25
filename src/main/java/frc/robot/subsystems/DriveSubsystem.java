@@ -9,7 +9,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FieldConstants;
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.dConstants;
 import frc.robot.Constants.vConstants;
@@ -125,6 +124,10 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   Translation2d m_backLeftLocation = dConstants.rearLeftWheel;
   Translation2d m_backRightLocation = dConstants.rearRightWheel;
 
+  Translation2d centeredRotation = new Translation2d(0, 0);
+
+  Translation2d frontRotation = new Translation2d(0, .5);
+
   
   /*creating a mecanum drive kinematics object which contains
   each of the four wheels position on the robot*/
@@ -168,14 +171,16 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     this.m_sensors = m_sensors;
 
     
-    
-
     // defining all spark configs and burning it to flash memory. 
     m_frontLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_frontRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_rearLeftEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
     m_rearRightEnc.setVelocityConversionFactor(dConstants.velocityConversionFactor);
 
+    m_frontLeftEnc.setPositionConversionFactor(dConstants.positionConversionFactor);
+    m_frontRightEnc.setPositionConversionFactor(dConstants.positionConversionFactor);
+    m_rearLeftEnc.setPositionConversionFactor(dConstants.positionConversionFactor);
+    m_rearRightEnc.setPositionConversionFactor(dConstants.positionConversionFactor);
 
     frontRightSparkMax.setInverted(false);
     rearRightSparkMax.setInverted(false);
@@ -261,9 +266,10 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     m_rearRightEnc.setPosition(0);
   }
 
-  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed) {
+  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed, Translation2d COR) {
   
-  ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed.getAsDouble(), ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
+  ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds
+    (xSpeed.getAsDouble(), ySpeed.getAsDouble(), rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
  
   double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontLeftMetersPerSecond;
   double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontRightMetersPerSecond;

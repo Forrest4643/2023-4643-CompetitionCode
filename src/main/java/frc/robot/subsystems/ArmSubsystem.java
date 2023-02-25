@@ -21,11 +21,15 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
 
   public RelativeEncoder armEncoder = armMotor.getEncoder();
 
+  private Sensors m_sensors;
+
   public ArmFeedforward armFFcontroller = new ArmFeedforward(0, 0.37, 3.63, 0.03);
 
 
+
+
   /** Creates a new ArmSubsystem. */
-  public ArmSubsystem() {
+  public ArmSubsystem(Sensors m_sensors) {
     super(
         // The ProfiledPIDController used by the subsystem
         new ProfiledPIDController(
@@ -34,7 +38,8 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
             0,
             // The motion profile constraints
             new TrapezoidProfile.Constraints(0, 0)));
-
+            
+        this.m_sensors = m_sensors;
         armEncoder.setPositionConversionFactor(0.00537109374);
   }
 
@@ -46,6 +51,6 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   @Override
   public double getMeasurement() {
     // Return the process variable measurement here
-    return 0;
+    return m_sensors.armNavxPitch();
   }
 }

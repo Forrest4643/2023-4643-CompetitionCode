@@ -38,8 +38,8 @@ public final class Constants {
 
         public static final double wheelRPMaccel = 750;
 
-        public static final double velocityConversionFactor = 0.1; //10:1 versaplanetary and 2.33~:1 pulley
-        public static final double positionConversionFactor = 1;
+        public static final double velocityConversionFactor = 0.1; //10:1 versaplanetary
+        public static final double positionConversionFactor = 0.04787787204; //0.0762m wheel radius
     }
 
     public static final class aConstants {

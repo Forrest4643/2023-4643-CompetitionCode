@@ -36,6 +36,8 @@ public class Sensors extends SubsystemBase {
   //creating AHRS device "navX"
   private AHRS navX;
 
+  private AHRS armNavX;
+
   //simulated yaw angle, for simulation.
   private SimDouble m_simYawAngle;
 
@@ -53,21 +55,24 @@ public class Sensors extends SubsystemBase {
   Transform3d robotToFrontCam = new Transform3d(
       new Translation3d(0.5, 0.0, 0), 
       new Rotation3d(0, Units.degreesToRadians(0),0)); 
-  
-  //Cam mounted facing backwards, half a meter back of center.
-  Transform3d robotToRearCam = new Transform3d(
-      new Translation3d(-0.5, 0.0, 0), 
-      new Rotation3d(0, 0, Units.degreesToRadians(180)));
+
 
 
   /** Creates a new IndexSensors. */
   public Sensors() {
 
-    // instantiate navx over USB
+    // instantiate navx over MXP
     try {
       navX = new AHRS(SerialPort.Port.kMXP);
     } catch (RuntimeException ex) {
       DriverStation.reportError("Error instantiating navX-MXP: " + ex.getMessage(), true);
+    }
+
+    // instantiate navx over USB
+    try {
+      armNavX = new AHRS(SerialPort.Port.kUSB);
+    } catch (RuntimeException ex) {
+      DriverStation.reportError("Error instantiating armNavX-USB: " + ex.getMessage(), true);
     }
 
      // sends WPI provided AprilTag locations to the PhotonVision field layout object
@@ -97,6 +102,10 @@ public class Sensors extends SubsystemBase {
     int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
     //setting simulated yaw angle to the JNI angle
     m_simYawAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+  }
+
+  public double armNavxPitch() {
+    return armNavX.getPitch();
   }
 
   public Rotation2d navXRotation2d() {

@@ -47,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
 
@@ -56,8 +57,11 @@ public class RobotContainer {
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
-  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors, () -> -m_driveController.getRawAxis(0), 
-    () -> -m_driveController.getRawAxis(1), () -> -m_driveController.getRawAxis(3));
+
+  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors,
+    () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
+      () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftY.value), 
+        () -> -m_driveController.getRawAxis(XboxController.Axis.kRightX.value));
 
   public RobotContainer() {
 
@@ -79,7 +83,20 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {
+    new JoystickButton(m_driveController, XboxController.Button.kA.value)
+      .onTrue(new InstantCommand(m_cartesianMecanumDrive::backRotation)); //Back rotation on A button
 
+    new JoystickButton(m_driveController, XboxController.Button.kB.value)
+      .onTrue(new InstantCommand(m_cartesianMecanumDrive::rightRotation)); //Back rotation on A button
+    
+    new JoystickButton(m_driveController, XboxController.Button.kX.value)
+      .onTrue(new InstantCommand(m_cartesianMecanumDrive::leftRotation)); //Back rotation on A button
+    
+    new JoystickButton(m_driveController, XboxController.Button.kY.value)
+      .onTrue(new InstantCommand(m_cartesianMecanumDrive::frontRotation)); //Back rotation on A button
+    
+    new JoystickButton(m_driveController, XboxController.Button.kLeftStick.value)
+      .onTrue(new InstantCommand(m_cartesianMecanumDrive::centeredRotation)); //Centered rotation on left stick press
   }
 }
 

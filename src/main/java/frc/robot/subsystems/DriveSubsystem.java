@@ -28,6 +28,7 @@ import org.photonvision.SimVisionSystem;
 import org.photonvision.EstimatedRobotPose;
 
 import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -40,6 +41,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
+import edu.wpi.first.math.util.Units;
 
 public class DriveSubsystem extends SubsystemBase implements Loggable {
   @Log.Graph
@@ -110,7 +112,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
       m_driveWheelPositions, new Pose2d(),
       new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // Kinematic estimate std deviations: X meters, Y
                                                                    // meters, and RAD heading
-      new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01)); // Vision estimate std deviations: X meters, Y
+      new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.25, 0.25, Units.degreesToRadians(5))); // Vision estimate std deviations: X meters, Y
                                                                     // meters, and RAD heading
 
   Sensors m_sensors;
@@ -266,10 +268,10 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   public void updateOdometry() {
 
     m_driveWheelPositions = new MecanumDriveWheelPositions(
-        m_frontLeftEnc.getPosition(),
-        m_frontRightEnc.getPosition(),
-        m_rearLeftEnc.getPosition(),
-        m_rearRightEnc.getPosition());
+        -m_frontLeftEnc.getPosition(),
+        -m_frontRightEnc.getPosition(),
+        -m_rearLeftEnc.getPosition(),
+        -m_rearRightEnc.getPosition());
 
     // sends gyro heading and wheel positions to pose estimator
     m_drivePoseEstimator.update(m_sensors.navXRotation2d(), m_driveWheelPositions);

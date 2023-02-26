@@ -80,13 +80,13 @@ public class cartesianMecanumDrive extends CommandBase {
 
     switch (m_rotationSelect) {
       case 1:
-        m_COR = new Translation2d(0, 0.5); // Forward center of rotation
+        m_COR = new Translation2d(0, 1); // Forward center of rotation
       case 2:
-        m_COR = new Translation2d(-0.5, 0); // Left center of rotation
+        m_COR = new Translation2d(-1, 0); // Left center of rotation
       case 3:
-        m_COR = new Translation2d(0.5, 0); // Right center of rotation
+        m_COR = new Translation2d(1, 0); // Right center of rotation
       case 4:
-        m_COR = new Translation2d(0, -0.5); // Back center of rotation
+        m_COR = new Translation2d(0, -1); // Back center of rotation
       default:
         m_COR = new Translation2d(0, 0); // Default to centered
     }

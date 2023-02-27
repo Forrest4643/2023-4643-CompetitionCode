@@ -12,6 +12,7 @@ import com.revrobotics.SparkMaxRelativeEncoder.Type;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants.aConstants;
 
@@ -48,6 +49,6 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   @Override
   public double getMeasurement() {
     // Return the process variable measurement here
-    return m_sensors.armNavxPitch();
+    return Units.degreesToRadians(m_sensors.armNavxPitch());
   }
 }

@@ -236,10 +236,10 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed.getAsDouble(), ySpeed.getAsDouble(),
         rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
 
-    double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontLeftMetersPerSecond;
-    double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).frontRightMetersPerSecond;
-    double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearRightMetersPerSecond;
-    double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds).rearLeftMetersPerSecond;
+    double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).frontLeftMetersPerSecond;
+    double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).frontRightMetersPerSecond;
+    double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).rearRightMetersPerSecond;
+    double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).rearLeftMetersPerSecond;
 
     desiredFrontRightRPM = metersPerSecondToRPM(frontRightMetersPerSecond);
     desiredFrontLeftRPM = metersPerSecondToRPM(frontLeftMetersPerSecond);

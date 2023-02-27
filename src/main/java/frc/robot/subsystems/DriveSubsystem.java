@@ -39,8 +39,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveMotorVoltages;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 
 public class DriveSubsystem extends SubsystemBase implements Loggable {
@@ -318,6 +320,17 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
     updateOdometry();
   } // end simulationPeriodic
+
+  public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
+    return new MecanumDriveWheelSpeeds(m_frontLeftEnc.getVelocity(), m_frontRightEnc.getVelocity(), m_rearLeftEnc.getVelocity(), m_rearRightEnc.getVelocity());
+  }
+
+  public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
+    frontRightSparkMax.setVoltage(volts.frontLeftVoltage);
+    rearLeftSparkMax.setVoltage(volts.rearLeftVoltage);
+    frontRightSparkMax.setVoltage(volts.frontRightVoltage);
+    rearRightSparkMax.setVoltage(volts.rearRightVoltage);
+  }
 
   // returns the read position of the robot on the field
   public Pose2d getPose() {

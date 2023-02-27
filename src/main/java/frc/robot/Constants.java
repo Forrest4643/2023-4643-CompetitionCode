@@ -6,8 +6,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
@@ -40,11 +42,13 @@ public final class Constants {
 
         public static final double velocityConversionFactor = 0.1; //10:1 versaplanetary
         public static final double positionConversionFactor = 0.04787787204; //0.0762m wheel radius
+
     }
 
     public static final class aConstants {
         public static final int armID = 5;
         public static final int teleID = 6;
+     
 
     }
     //Pneumatic constants
@@ -67,9 +71,21 @@ public final class Constants {
     //Auto constants
     public static final class autoConstants {
 
-        public static final double kMaxSpeedMetersPerSecond = 3.0;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 1.0;
-        public static final double kRamseteB = 2.0;
-        public static final double kRamseteZeta = 0.7;
+        public static final double kPXController = 0;
+        public static final double kPYController = 0;
+        public static final double kPThetaController = 0;
+        public static final double kIThetaController = 0;
+        public static final double kMaxSpeedMetersPerSecond = 0;
+        public static final double kIXController = 0;
+        public static final double kDXController = 0;
+        public static final double kIYController = 0;
+        public static final double kDYController = 0;
+        public static final double kPwheelVel = 0;
+        public static final double kIwheelVel = 0;
+        public static final double kDwheelVel = 0;
+        public static final SimpleMotorFeedforward kFeedforward = new SimpleMotorFeedforward(0, 0);
+        public static final double kMaxAccelerationMetersPerSecondSquared = 0;
+
+        public static TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(0, 0);
     }
 }

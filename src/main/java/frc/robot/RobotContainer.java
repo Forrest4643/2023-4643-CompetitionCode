@@ -13,6 +13,7 @@ import java.util.List;
 
 import edu.wpi.first.hal.simulation.SimulatorJNI;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -37,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.dConstants;
 import frc.robot.commands.cartesianMecanumDrive;
 import frc.robot.subsystems.*;
@@ -100,6 +102,55 @@ public class RobotContainer {
       .onTrue(new InstantCommand(m_cartesianMecanumDrive::centeredRotation)); //Centered rotation on left stick press
   }
 
+  public Command getAutonomousCommand() {
+
+        // Create config for trajectory
+        TrajectoryConfig config =
+        new TrajectoryConfig(
+                autoConstants.kMaxSpeedMetersPerSecond,
+                autoConstants.kMaxAccelerationMetersPerSecondSquared)
+            // Add kinematics to ensure max speed is actually obeyed
+            .setKinematics(m_driveSubsystem.m_kinematics);
+
+    // An example trajectory to follow.  All units in meters.
+    Trajectory exampleTrajectory =
+        TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            m_driveSubsystem.getPose(),
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+            // End 3 meters straight ahead of where we started, facing forward
+            new Pose2d(3, 0, new Rotation2d(0)),
+            config);
+
+  MecanumControllerCommand mecanumControllerCommand =
+  new MecanumControllerCommand(
+      exampleTrajectory,
+      m_driveSubsystem::getPose,
+      autoConstants.kFeedforward,
+      m_driveSubsystem.m_kinematics,
+
+      // Position contollers
+      new PIDController(autoConstants.kPXController, autoConstants.kIXController, autoConstants.kDXController),
+      new PIDController(autoConstants.kPYController, autoConstants.kIYController, autoConstants.kDYController),
+      new ProfiledPIDController(
+          autoConstants.kPThetaController, autoConstants.kIThetaController, autoConstants.kPThetaController, autoConstants.kThetaControllerConstraints),
+
+      // Needed for normalizing wheel speeds
+      autoConstants.kMaxSpeedMetersPerSecond,
+
+      // Velocity PID's
+      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
+      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
+      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
+      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
+      m_driveSubsystem::getCurrentWheelSpeeds,
+      m_driveSubsystem::setDriveMotorControllersVolts, // Consumer for the output motor voltages
+      m_driveSubsystem);
+      System.out.println("Path following started!");
+      return mecanumControllerCommand.andThen(() -> m_driveSubsystem.stopMotors());
+
+  }
 }
 
 

@@ -14,6 +14,7 @@ import io.github.oblarg.oblog.annotations.Log;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.io.ObjectInputStream;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -69,6 +70,11 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
   // @Log.Graph
   private double desiredRearRightRPM = 0;
+
+  @Log
+  private double m_rotationX = 0;
+  @Log
+  private double m_rotationY = 0;
 
   // defining motor names and CAN ID's
   
@@ -232,16 +238,20 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     m_rearRightEnc.setPosition(0);
   }
 
-  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed,
-      Translation2d COR) {
+  public void cartesianMecanumDrive(DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier rotationSpeed, DoubleSupplier corX, DoubleSupplier corY) {
 
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed.getAsDouble(), ySpeed.getAsDouble(),
         rotationSpeed.getAsDouble(), m_sensors.navXRotation2d());
 
-    double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).frontLeftMetersPerSecond;
-    double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).frontRightMetersPerSecond;
-    double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).rearRightMetersPerSecond;
-    double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, COR).rearLeftMetersPerSecond;
+        
+    m_rotationX = corX.getAsDouble();
+
+    m_rotationY = corY.getAsDouble();
+
+    double frontLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds, new Translation2d(m_rotationX, m_rotationY)).frontLeftMetersPerSecond;
+    double frontRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).frontRightMetersPerSecond;
+    double rearRightMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).rearRightMetersPerSecond;
+    double rearLeftMetersPerSecond = m_kinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).rearLeftMetersPerSecond;
 
     desiredFrontRightRPM = metersPerSecondToRPM(frontRightMetersPerSecond);
     desiredFrontLeftRPM = metersPerSecondToRPM(frontLeftMetersPerSecond);
@@ -293,6 +303,8 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
       m_field.getObject("Cam Est Pos").setPose(new Pose2d(-100, -100, new Rotation2d()));
     }
 
+    
+
     // updating the robots estimated pose on the field
     m_field.setRobotPose(m_drivePoseEstimator.getEstimatedPosition());
   }
@@ -326,7 +338,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   }
 
   public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
-    frontRightSparkMax.setVoltage(volts.frontLeftVoltage);
+    frontLeftSparkMax.setVoltage(volts.frontLeftVoltage);
     rearLeftSparkMax.setVoltage(volts.rearLeftVoltage);
     frontRightSparkMax.setVoltage(volts.frontRightVoltage);
     rearRightSparkMax.setVoltage(volts.rearRightVoltage);

@@ -11,10 +11,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
 public final class Constants {
     //Drive Constants
-    public static final class dConstants {
+    public static final class dConstants implements Loggable{
         public static final int leftFrontID = 1;
         public static final int leftRearID = 2;
         public static final int rightFrontID = 4;
@@ -71,21 +73,23 @@ public final class Constants {
     //Auto constants
     public static final class autoConstants {
 
-        public static final double kPXController = 0;
-        public static final double kPYController = 0;
-        public static final double kPThetaController = 0;
-        public static final double kIThetaController = 0;
-        public static final double kMaxSpeedMetersPerSecond = 0;
+        public static final double kPXController = 7;
+        public static final double kPYController = 12;
+        public static final double kPThetaController = 0.05;
+        public static final double kIThetaController = 0.0;
+        public static final double kMaxSpeedMetersPerSecond = 2;
         public static final double kIXController = 0;
         public static final double kDXController = 0;
-        public static final double kIYController = 0;
-        public static final double kDYController = 0;
-        public static final double kPwheelVel = 0;
-        public static final double kIwheelVel = 0;
-        public static final double kDwheelVel = 0;
-        public static final SimpleMotorFeedforward kFeedforward = new SimpleMotorFeedforward(0, 0);
-        public static final double kMaxAccelerationMetersPerSecondSquared = 0;
+        public static final double kIYController = 0.0005;
+        public static final double kDYController = 0.001;
+        public static final double kPwheelVel = 0.02;
+        public static final double kIwheelVel = 0.0;
+        public static final double kDwheelVel = 0.0;
+        
+        
+        public static final SimpleMotorFeedforward kFeedforward = new SimpleMotorFeedforward(.3, 3.5);
+        public static final double kMaxAccelerationMetersPerSecondSquared = .5;
 
-        public static TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(0, 0);
+        public static TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(2, 2);
     }
 }

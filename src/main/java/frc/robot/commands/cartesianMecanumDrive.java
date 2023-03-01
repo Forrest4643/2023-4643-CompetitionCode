@@ -17,8 +17,10 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.dConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
-public class cartesianMecanumDrive extends CommandBase {
+public class cartesianMecanumDrive extends CommandBase implements Loggable {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
@@ -30,6 +32,7 @@ public class cartesianMecanumDrive extends CommandBase {
 
   private double m_expectedHeading;
 
+  @Log
   private int m_rotationSelect = 0;
 
   private Translation2d m_COR;
@@ -80,19 +83,24 @@ public class cartesianMecanumDrive extends CommandBase {
 
     switch (m_rotationSelect) {
       case 1:
-        m_COR = new Translation2d(0, 1); // Forward center of rotation
+        m_COR = new Translation2d(0, .5);
+        break; // Forward center of rotation
       case 2:
-        m_COR = new Translation2d(-1, 0); // Left center of rotation
+        m_COR = new Translation2d(-.5, 0); // Left center of rotation
+        break;
       case 3:
-        m_COR = new Translation2d(1, 0); // Right center of rotation
+        m_COR = new Translation2d(.5, 0); // Right center of rotation
+        break;
       case 4:
-        m_COR = new Translation2d(0, -1); // Back center of rotation
+        m_COR = new Translation2d(0, -.5); // Back center of rotation
+        break;
       default:
         m_COR = new Translation2d(0, 0); // Default to centered
+        break;
     }
 
     // sending outputs to drive controller
-    m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput, m_COR);
+    m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput, () -> m_COR.getX(), () -> m_COR.getY());
 
     // debug info
     SmartDashboard.putNumber("speedX", speedX.getAsDouble());

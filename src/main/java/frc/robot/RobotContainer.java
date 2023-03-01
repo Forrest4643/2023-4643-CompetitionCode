@@ -31,7 +31,9 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
+import io.github.oblarg.oblog.annotations.Log.Logs;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
@@ -52,7 +54,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class RobotContainer {
+public class RobotContainer implements Loggable{
 
   String trajectoryJSON = "Output/Ball1.wpilib.json";
   private Sensors m_sensors = new Sensors();
@@ -118,9 +120,9 @@ public class RobotContainer {
             // Start at the origin facing the +X direction
             m_driveSubsystem.getPose(),
             // Pass through these two interior waypoints, making an 's' curve path
-            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+            List.of(new Translation2d(.5, .5), new Translation2d(1, -.5)),
             // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(3, 0, new Rotation2d(0)),
+            m_driveSubsystem.getPose(),
             config);
 
   MecanumControllerCommand mecanumControllerCommand =
@@ -140,6 +142,7 @@ public class RobotContainer {
       autoConstants.kMaxSpeedMetersPerSecond,
 
       // Velocity PID's
+
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
@@ -147,6 +150,8 @@ public class RobotContainer {
       m_driveSubsystem::getCurrentWheelSpeeds,
       m_driveSubsystem::setDriveMotorControllersVolts, // Consumer for the output motor voltages
       m_driveSubsystem);
+
+      // m_driveSubsystem.resetOdometry(new Pose2d());
       System.out.println("Path following started!");
       return mecanumControllerCommand.andThen(() -> m_driveSubsystem.stopMotors());
 

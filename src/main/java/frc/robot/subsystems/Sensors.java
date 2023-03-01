@@ -53,8 +53,8 @@ public class Sensors extends SubsystemBase {
 
   //Cam mounted facing forward, half a meter forward of center.
   Transform3d robotToFrontCam = new Transform3d(
-      new Translation3d(0.5, 0.0, 0), 
-      new Rotation3d(0, Units.degreesToRadians(0),0)); 
+      new Translation3d(0.5, 0.0, 0.349), 
+      new Rotation3d(0, Units.degreesToRadians(5),Units.degreesToRadians(0))); 
 
 
 
@@ -150,6 +150,7 @@ public class Sensors extends SubsystemBase {
 
   public void resetNavxDisplacement() {
     navX.resetDisplacement();
+    
   }
 
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {

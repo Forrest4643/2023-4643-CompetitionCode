@@ -8,32 +8,72 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.dConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
-import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
-public class cartesianMecanumDrive extends CommandBase implements Loggable {
+public class cartesianMecanumDrive extends CommandBase  {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
+
+  @Config
   private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI,
       dConstants.steerkD, 0.02);
-  private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(dConstants.steerkF, 0);
+
+  //static constant
+  private double headingkS = 0.06;
+  @Config
+  public void setHeadingKS(double kS) {
+    if (kS != 0) {
+      headingkS = kS;
+    }
+  }
+  //velocity constant
+  private double headingkV = 0.0;
+  @Config
+  public void setHeadingkV(double kV) {
+    if (kV != 0) {
+      headingkV = kV;
+    }
+  }
+  //acceleration constant
+  private double headingkA = 0.0;
+  @Config
+  public void setHeadingkA(double kA) {
+    if (kA != 0) {
+      headingkA = kA;
+    }
+  }
+
+  private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(headingkS, headingkV, headingkA);
+
   private Sensors m_sensors;
 
   private double m_expectedHeading;
 
-  @Log
   private int m_rotationSelect = 0;
+
+  private double m_steerSensitivity = 4;
+
+  @Config
+  public void setM_steerSensitivity(double multiplier) {
+    if (multiplier != 0) {
+      m_steerSensitivity = multiplier;
+    }
+  }
+
+  @Log
+  private String rotationMode = "COR: Centered";
 
   private Translation2d m_COR;
 
@@ -42,8 +82,8 @@ public class cartesianMecanumDrive extends CommandBase implements Loggable {
       DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.m_sensors = m_sensors;
-    this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), dConstants.inputDeadband) * 1.4);
-    this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), dConstants.inputDeadband) * 1.4);
+    this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), dConstants.inputDeadband) * dConstants.speedSinMultiplier);
+    this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), dConstants.inputDeadband) * dConstants.speedSinMultiplier);
     this.driverHeadingAdjustment = driverHeadingAdjustment;
     m_expectedHeading = 0;
 
@@ -75,27 +115,37 @@ public class cartesianMecanumDrive extends CommandBase implements Loggable {
     }
 
     // Takes input from the driver and adjusts the robot's expected heading
-    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (dhaOUT * 4), 0, 360);
+    m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (dhaOUT * m_steerSensitivity), 0, 360);
 
     // sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(-m_sensors.NavXFusedHeading(), m_expectedHeading)
+    double rotationOutput = driveHeadingController.calculate(LinearFilter.movingAverage(3).calculate(-m_sensors.NavXFusedHeading()), m_expectedHeading)
         + driveHeadingFF.calculate(driveHeadingController.getPositionError());
 
     switch (m_rotationSelect) {
       case 1:
+        // Forward center of rotation
         m_COR = new Translation2d(0, .5);
-        break; // Forward center of rotation
+        rotationMode = "COR: Front";
+        break; 
       case 2:
-        m_COR = new Translation2d(-.5, 0); // Left center of rotation
+        // Left center of rotation
+        m_COR = new Translation2d(-.5, 0); 
+        rotationMode = "COR: Left";
         break;
       case 3:
-        m_COR = new Translation2d(.5, 0); // Right center of rotation
+        // Right center of rotation
+        m_COR = new Translation2d(.5, 0); 
+        rotationMode = "COR: Right";
         break;
       case 4:
-        m_COR = new Translation2d(0, -.5); // Back center of rotation
+        // Back center of rotation
+        m_COR = new Translation2d(0, -.5); 
+        rotationMode = "COR: Back";
         break;
       default:
-        m_COR = new Translation2d(0, 0); // Default to centered
+        // Default to centered
+        m_COR = new Translation2d(0, 0); 
+        rotationMode = "COR: Centered";
         break;
     }
 

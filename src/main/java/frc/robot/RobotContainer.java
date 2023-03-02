@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
+import io.github.oblarg.oblog.annotations.Log;
 import io.github.oblarg.oblog.annotations.Log.Logs;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -117,11 +118,11 @@ public class RobotContainer implements Loggable{
     // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory =
         TrajectoryGenerator.generateTrajectory(
-            // Start at the origin facing the +X direction
+            // Start at the estimated current robot pose
             m_driveSubsystem.getPose(),
             // Pass through these two interior waypoints, making an 's' curve path
             List.of(new Translation2d(.5, .5), new Translation2d(1, -.5)),
-            // End 3 meters straight ahead of where we started, facing forward
+            // End exactly where we started
             m_driveSubsystem.getPose(),
             config);
 
@@ -136,13 +137,12 @@ public class RobotContainer implements Loggable{
       new PIDController(autoConstants.kPXController, autoConstants.kIXController, autoConstants.kDXController),
       new PIDController(autoConstants.kPYController, autoConstants.kIYController, autoConstants.kDYController),
       new ProfiledPIDController(
-          autoConstants.kPThetaController, autoConstants.kIThetaController, autoConstants.kPThetaController, autoConstants.kThetaControllerConstraints),
+          autoConstants.kPThetaController, autoConstants.kIThetaController, autoConstants.kDThetaController, autoConstants.kThetaControllerConstraints),
 
       // Needed for normalizing wheel speeds
       autoConstants.kMaxSpeedMetersPerSecond,
 
       // Velocity PID's
-
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),

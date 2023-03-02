@@ -18,16 +18,19 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import io.github.oblarg.oblog.annotations.Config;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.SerialPort;
 
@@ -44,6 +47,8 @@ public class Sensors extends SubsystemBase {
   public AprilTagFieldLayout aprilTagFieldLayout;
 
   public PhotonPoseEstimator photonFrontPoseEstimator;
+
+  private double m_fusedHeadingOffset = 0;
 
   //public PhotonPoseEstimator photonrearPoseEstimator;
 
@@ -81,15 +86,12 @@ public class Sensors extends SubsystemBase {
 
       // Construct PhotonPoseEstimator
       this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP, frontCamera, robotToFrontCam);
-      photonFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+      photonFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
       
     } catch (IOException e) {
       DriverStation.reportError("Error loading AprilTagFieldLayout in Sensors:" + e.getMessage(), true);
       photonFrontPoseEstimator = null;
     }
-
-    
-
   }
 
   @Override
@@ -102,10 +104,6 @@ public class Sensors extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    //getting simulated device handle for navX
-    int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
-    //setting simulated yaw angle to the JNI angle
-    m_simYawAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
   }
 
   public double armNavxPitch() {
@@ -120,8 +118,13 @@ public class Sensors extends SubsystemBase {
     return navX.getYaw();
   }
 
+  @Config
+  public void setFusedHeadingOffset(double offset) {
+    m_fusedHeadingOffset = offset;
+  }
+
   public double NavXFusedHeading() {
-    return navX.getFusedHeading();
+    return MathUtil.inputModulus(navX.getFusedHeading() + m_fusedHeadingOffset, 0, 360);
   }
 
   public double navXPitch() {
@@ -144,8 +147,11 @@ public class Sensors extends SubsystemBase {
     return navX.getRate();
   }
 
-  public Translation2d navXdisplacement() {
-    return new Translation2d(navX.getDisplacementX(), navX.getDisplacementY());
+  public Transform2d navXdisplacement() {
+    return new Transform2d(new Translation2d(
+      navX.getDisplacementX(), navX.getDisplacementY()), 
+        new Rotation2d());
+
   }
 
   public void resetNavxDisplacement() {

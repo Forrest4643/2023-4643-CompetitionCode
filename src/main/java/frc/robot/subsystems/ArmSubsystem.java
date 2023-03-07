@@ -13,6 +13,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants.armConstants;
 import io.github.oblarg.oblog.Loggable;
@@ -20,7 +21,7 @@ import io.github.oblarg.oblog.annotations.Config;
 
 public class ArmSubsystem extends ProfiledPIDSubsystem implements Loggable{
 
-  public final CANSparkMax m_armMotor = new CANSparkMax(armConstants.armID, MotorType.kBrushless);
+  public final CANSparkMax m_armMotor = new CANSparkMax(armConstants.kArmID, MotorType.kBrushless);
 
   public RelativeEncoder m_armEncoder = m_armMotor.getEncoder();
 
@@ -74,27 +75,35 @@ public class ArmSubsystem extends ProfiledPIDSubsystem implements Loggable{
     }
   }
 
+  private static double m_kD = 0;
+  @Config
+  public void setArmkD(double kD) {
+    if(kD != 0) {
+      m_kD = kD;
+    }
+  }
+
 
   public ArmFeedforward armFFcontroller = new ArmFeedforward(m_kS, m_kG, m_kV, m_kA);
 
   /** Creates a new ArmSubsystem. */
-  public ArmSubsystem(Sensors m_sensors) {
+  public ArmSubsystem(Sensors m_Sensors) {
     super(
         // The ProfiledPIDController used by the subsystem
         new ProfiledPIDController(
             m_kP,
             m_kI,
-            m_kP,
-            
+            m_kD,
+
             // The motion profile constraints
             new TrapezoidProfile.Constraints(
-              Units.degreesToRadians(armConstants.maxVelocityDegSec), 
-              Units.degreesToRadians(armConstants.maxAccelDegSec)
+              Units.degreesToRadians(armConstants.kMaxVelocityDegSec), 
+              Units.degreesToRadians(armConstants.kMaxAccelDegSec)
             )
         )
     );
 
-    this.m_sensors = m_sensors;
+    this.m_sensors = m_Sensors;
 
     m_armEncoder.setPositionConversionFactor(0.00537109374);
 

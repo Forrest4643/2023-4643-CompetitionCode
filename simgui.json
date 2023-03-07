@@ -27,6 +27,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/DriveSubsystem": "Subsystem",
+      "/LiveWindow/Sensors": "Subsystem",
       "/LiveWindow/Ungrouped/PIDController[16]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[17]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[18]": "PIDController",
@@ -69,6 +70,12 @@
         ".status": {
           "open": true
         },
+        "ArmSubsystem": {
+          "open": true
+        },
+        "TelescopingSubsystem": {
+          "open": true
+        },
         "Ungrouped": {
           "PIDController[16]": {
             "open": true
@@ -79,12 +86,24 @@
           "PIDController[18]": {
             "open": true
           },
+          "PIDController[3]": {
+            "open": true
+          },
+          "open": true
+        },
+        "WristSubsystem": {
           "open": true
         },
         "open": true
       },
       "Shuffleboard": {
-        "DriveSubsystem": {
+        "ManipControl": {
+          "open": true
+        },
+        "TelescopingSubsystem": {
+          "open": true
+        },
+        "WristSubsystem": {
           "open": true
         },
         "open": true
@@ -113,15 +132,6 @@
     "Clients": {
       "open": true
     },
-    "Connections": {
-      "open": true
-    },
-    "Server": {
-      "Publishers": {
-        "open": true
-      },
-      "open": true
-    },
     "shuffleboard": {
       "Publishers": {
         "open": true
@@ -130,7 +140,6 @@
         "open": true
       },
       "open": true
-    },
-    "visible": true
+    }
   }
 }

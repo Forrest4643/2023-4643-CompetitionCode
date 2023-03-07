@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants.wristConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Config;
-import io.github.oblarg.oblog.annotations.Log;
 
 public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
 
@@ -80,14 +79,16 @@ public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
     }
   }
 
-  public final CANSparkMax m_wristMotor = new CANSparkMax(wristConstants.wristID, MotorType.kBrushless);
+  private Sensors m_sensors;
+
+  public final CANSparkMax m_wristMotor = new CANSparkMax(wristConstants.kWristID, MotorType.kBrushless);
 
   public final SparkMaxAbsoluteEncoder m_wristEncoder = m_wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
 
   public ArmFeedforward m_wristFF = new ArmFeedforward(m_kS, m_kG, m_kV, m_kA);
 
   /** Creates a new wristSubsystem. */
-  public WristSubsystem() {
+  public WristSubsystem(Sensors m_Sensors) {
     super(
         // The ProfiledPIDController used by the subsystem
         new ProfiledPIDController(
@@ -95,10 +96,18 @@ public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
             m_kI,
             m_kD,
             // The motion profile constraints
-            new TrapezoidProfile.Constraints(wristConstants.maxVelocityMeters, wristConstants.maxAccelMeters)));
+            new TrapezoidProfile.Constraints(wristConstants.kMaxVelocityMeters, wristConstants.kMaxAccelMeter)));
+
+            this.m_sensors = m_Sensors;
   }
 
-  
+  @Override
+  public void periodic() {
+    super.periodic();
+    SmartDashboard.putNumber("wristPosition:", m_wristEncoder.getPosition());
+  }
+
+
 
   @Override
   public void useOutput(double output, TrapezoidProfile.State setpoint) {

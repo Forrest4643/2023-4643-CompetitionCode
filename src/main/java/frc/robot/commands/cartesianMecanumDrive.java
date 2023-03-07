@@ -20,7 +20,7 @@ import frc.robot.subsystems.Sensors;
 import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
-public class cartesianMecanumDrive extends CommandBase  {
+public class CartesianMecanumDrive extends CommandBase  {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
@@ -78,12 +78,12 @@ public class cartesianMecanumDrive extends CommandBase  {
   private Translation2d m_COR;
 
   /** Creates a new cartesianMecanumDrive. */
-  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_sensors, DoubleSupplier speedX,
+  public CartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_Sensors, DoubleSupplier speedX,
       DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
-    this.m_sensors = m_sensors;
-    this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), driveConstants.inputDeadband) * driveConstants.speedSinMultiplier);
-    this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), driveConstants.inputDeadband) * driveConstants.speedSinMultiplier);
+    this.m_sensors = m_Sensors;
+    this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), driveConstants.kInputDeadband) * driveConstants.kSpeedSinMultiplier);
+    this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), driveConstants.kInputDeadband) * driveConstants.kSpeedSinMultiplier);
     this.driverHeadingAdjustment = driverHeadingAdjustment;
     m_expectedHeading = 0;
 
@@ -106,12 +106,12 @@ public class cartesianMecanumDrive extends CommandBase  {
       dhaOUT = -MathUtil.applyDeadband(
           Math.sin(
               turnSlewRateLimiter.calculate(Math.abs(dha))),
-          driveConstants.inputDeadband);
+          driveConstants.kInputDeadband);
     } else {
       dhaOUT = MathUtil.applyDeadband(
           Math.sin(
               turnSlewRateLimiter.calculate(Math.abs(dha))),
-          driveConstants.inputDeadband);
+          driveConstants.kInputDeadband);
     }
 
     // Takes input from the driver and adjusts the robot's expected heading

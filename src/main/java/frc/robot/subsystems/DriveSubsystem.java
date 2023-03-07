@@ -33,7 +33,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveMotorVoltages;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
@@ -42,19 +41,14 @@ import edu.wpi.first.math.util.Units;
 
 public class DriveSubsystem extends SubsystemBase implements Loggable {
 
-  private double m_desiredFrontLeftRPM = 0;
-  private double m_desiredFrontRightRPM = 0;
-  private double m_desiredRearLeftRPM = 0;
-  private double m_desiredRearRightRPM = 0;
-
   private double m_rotationX = 0;
   private double m_rotationY = 0;
 
   // defining motor names and CAN ID's
-  private final CANSparkMax frontLeftSparkMax = new CANSparkMax(driveConstants.leftFrontID, MotorType.kBrushless);
-  private final CANSparkMax rearLeftSparkMax = new CANSparkMax(driveConstants.leftRearID, MotorType.kBrushless);
-  private final CANSparkMax frontRightSparkMax = new CANSparkMax(driveConstants.rightFrontID, MotorType.kBrushless);
-  private final CANSparkMax rearRightSparkMax = new CANSparkMax(driveConstants.rightRearID, MotorType.kBrushless);
+  private final CANSparkMax frontLeftSparkMax = new CANSparkMax(driveConstants.kLeftFrontID, MotorType.kBrushless);
+  private final CANSparkMax rearLeftSparkMax = new CANSparkMax(driveConstants.kLeftRearID, MotorType.kBrushless);
+  private final CANSparkMax frontRightSparkMax = new CANSparkMax(driveConstants.kRightFrontID, MotorType.kBrushless);
+  private final CANSparkMax rearRightSparkMax = new CANSparkMax(driveConstants.kRightRearID, MotorType.kBrushless);
 
   // defining encoders
   public RelativeEncoder m_frontLeftEnc = frontLeftSparkMax.getEncoder();
@@ -114,9 +108,9 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   Sensors m_sensors;
 
   MecanumDriveOdometry m_driveOdometry = new MecanumDriveOdometry(
-    driveConstants.driveKinematics, new Rotation2d(), m_driveWheelPositions);
+    driveConstants.kDriveKinematics, new Rotation2d(), m_driveWheelPositions);
 
-  MecanumDrivePoseEstimator m_drivePoseEstimator = new MecanumDrivePoseEstimator(driveConstants.driveKinematics, new Rotation2d(),
+  MecanumDrivePoseEstimator m_drivePoseEstimator = new MecanumDrivePoseEstimator(driveConstants.kDriveKinematics, new Rotation2d(),
       m_driveWheelPositions, new Pose2d(),
       new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.25, 0.25, Units.degreesToRadians(0.1)), // Kinematic estimate std deviations: X meters, Y
                                                                    // meters, and RAD heading
@@ -125,37 +119,39 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
   public Pose2d navXPose2d = new Pose2d(-100, -100, null);
 
-  private Pose2d lastVisionPose = new Pose2d();
 
   private Field2d m_field = new Field2d();
 
+  MecanumDriveWheelSpeeds m_driveMeterSeconds = new MecanumDriveWheelSpeeds();
+
+
 
   // Creates DriveSubsystem
-  public DriveSubsystem(Sensors m_sensors) {
+  public DriveSubsystem(Sensors m_Sensors) {
 
     // telling this class where to find the Sensors subsystem
-    this.m_sensors = m_sensors;
+    this.m_sensors = m_Sensors;
 
     // defining all spark configs and burning it to flash memory.
-    m_frontLeftEnc.setVelocityConversionFactor(driveConstants.velocityConversionFactorRPM);
-    m_frontRightEnc.setVelocityConversionFactor(driveConstants.velocityConversionFactorRPM);
-    m_rearLeftEnc.setVelocityConversionFactor(driveConstants.velocityConversionFactorRPM);
-    m_rearRightEnc.setVelocityConversionFactor(driveConstants.velocityConversionFactorRPM);
+    m_frontLeftEnc.setVelocityConversionFactor(driveConstants.kVelocityConversionFactorRPM);
+    m_frontRightEnc.setVelocityConversionFactor(driveConstants.kVelocityConversionFactorRPM);
+    m_rearLeftEnc.setVelocityConversionFactor(driveConstants.kVelocityConversionFactorRPM);
+    m_rearRightEnc.setVelocityConversionFactor(driveConstants.kVelocityConversionFactorRPM);
 
-    m_frontLeftEnc.setPositionConversionFactor(driveConstants.positionConversionFactorMeters);
-    m_frontRightEnc.setPositionConversionFactor(driveConstants.positionConversionFactorMeters);
-    m_rearLeftEnc.setPositionConversionFactor(driveConstants.positionConversionFactorMeters);
-    m_rearRightEnc.setPositionConversionFactor(driveConstants.positionConversionFactorMeters);
+    m_frontLeftEnc.setPositionConversionFactor(driveConstants.kPositionConversionFactorMeters);
+    m_frontRightEnc.setPositionConversionFactor(driveConstants.kPositionConversionFactorMeters);
+    m_rearLeftEnc.setPositionConversionFactor(driveConstants.kPositionConversionFactorMeters);
+    m_rearRightEnc.setPositionConversionFactor(driveConstants.kPositionConversionFactorMeters);
 
     frontRightSparkMax.setInverted(false);
     rearRightSparkMax.setInverted(false);
     frontLeftSparkMax.setInverted(true);
     rearLeftSparkMax.setInverted(true);
 
-    frontRightSparkMax.setSmartCurrentLimit(driveConstants.driveSparkSmartCurrentLimit);
-    frontLeftSparkMax.setSmartCurrentLimit(driveConstants.driveSparkSmartCurrentLimit);
-    rearRightSparkMax.setSmartCurrentLimit(driveConstants.driveSparkSmartCurrentLimit);
-    rearLeftSparkMax.setSmartCurrentLimit(driveConstants.driveSparkSmartCurrentLimit);
+    frontRightSparkMax.setSmartCurrentLimit(driveConstants.kDriveSparkSmartCurrentLimit);
+    frontLeftSparkMax.setSmartCurrentLimit(driveConstants.kDriveSparkSmartCurrentLimit);
+    rearRightSparkMax.setSmartCurrentLimit(driveConstants.kDriveSparkSmartCurrentLimit);
+    rearLeftSparkMax.setSmartCurrentLimit(driveConstants.kDriveSparkSmartCurrentLimit);
 
     m_frontLeftPIDFF.setP(sparkMAXVelocitykP, 0);
     m_frontRightPIDFF.setP(sparkMAXVelocitykP, 0);
@@ -177,25 +173,25 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     m_rearLeftPIDFF.setFF(sparkMAXVelocitykF, 0);
     m_rearRightPIDFF.setFF(sparkMAXVelocitykF, 0);
 
-    m_frontLeftPIDFF.setSmartMotionMaxAccel(driveConstants.wheelRPMaccel, 0);
-    m_frontRightPIDFF.setSmartMotionMaxAccel(driveConstants.wheelRPMaccel, 0);
-    m_rearRightPIDFF.setSmartMotionMaxAccel(driveConstants.wheelRPMaccel, 0);
-    m_rearLeftPIDFF.setSmartMotionMaxAccel(driveConstants.wheelRPMaccel, 0);
+    m_frontLeftPIDFF.setSmartMotionMaxAccel(driveConstants.kWheelRPMaccel, 0);
+    m_frontRightPIDFF.setSmartMotionMaxAccel(driveConstants.kWheelRPMaccel, 0);
+    m_rearRightPIDFF.setSmartMotionMaxAccel(driveConstants.kWheelRPMaccel, 0);
+    m_rearLeftPIDFF.setSmartMotionMaxAccel(driveConstants.kWheelRPMaccel, 0);
 
     m_frontLeftPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
     m_frontRightPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
     m_rearRightPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
     m_rearLeftPIDFF.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
 
-    m_frontLeftPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
-    m_frontRightPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
-    m_rearRightPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
-    m_rearLeftPIDFF.setSmartMotionAllowedClosedLoopError(0, 0);
+    m_frontLeftPIDFF.setSmartMotionAllowedClosedLoopError(driveConstants.kAllowedVelocityErrorRPM, 0);
+    m_frontRightPIDFF.setSmartMotionAllowedClosedLoopError(driveConstants.kAllowedVelocityErrorRPM, 0);
+    m_rearRightPIDFF.setSmartMotionAllowedClosedLoopError(driveConstants.kAllowedVelocityErrorRPM, 0);
+    m_rearLeftPIDFF.setSmartMotionAllowedClosedLoopError(driveConstants.kAllowedVelocityErrorRPM, 0);
 
-    m_frontLeftPIDFF.setSmartMotionMaxVelocity(570, 0);
-    m_frontRightPIDFF.setSmartMotionMaxVelocity(570, 0);
-    m_rearRightPIDFF.setSmartMotionMaxVelocity(570, 0);
-    m_rearLeftPIDFF.setSmartMotionMaxVelocity(570, 0);
+    m_frontLeftPIDFF.setSmartMotionMaxVelocity(driveConstants.kMaxWheelRPM, 0);
+    m_frontRightPIDFF.setSmartMotionMaxVelocity(driveConstants.kMaxWheelRPM, 0);
+    m_rearRightPIDFF.setSmartMotionMaxVelocity(driveConstants.kMaxWheelRPM, 0);
+    m_rearLeftPIDFF.setSmartMotionMaxVelocity(driveConstants.kMaxWheelRPM, 0);
 
     m_frontLeftPIDFF.setSmartMotionMinOutputVelocity(0, 0);
     m_frontRightPIDFF.setSmartMotionMinOutputVelocity(0, 0);
@@ -226,8 +222,8 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     //the speed inputs to this should be in meters/s, and rotation in rads/s 
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
       //converting the -1 to 1 controller input to meters per second
-      xSpeed.getAsDouble() * driveConstants.maxAttainableMetersPerSecond, 
-      ySpeed.getAsDouble() * driveConstants.maxAttainableMetersPerSecond,
+      xSpeed.getAsDouble() * driveConstants.kMaxAttainableMetersPerSecond, 
+      ySpeed.getAsDouble() * driveConstants.kMaxAttainableMetersPerSecond,
         rotationSpeed.getAsDouble(), Rotation2d.fromDegrees(m_sensors.NavXFusedHeading()));    
 
     //these are the x and y offsets for the center of rotation
@@ -236,24 +232,15 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
     //calculating each wheels requested M/s velocity from the chassis speeds object
     MecanumDriveWheelSpeeds driveWheelSpeeds = new MecanumDriveWheelSpeeds(
-      driveConstants.driveKinematics.toWheelSpeeds(chassisSpeeds, new Translation2d(m_rotationX, m_rotationY)).frontLeftMetersPerSecond, 
-      driveConstants.driveKinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).frontRightMetersPerSecond, 
-      driveConstants.driveKinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).rearLeftMetersPerSecond, 
-      driveConstants.driveKinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).rearRightMetersPerSecond);
+      driveConstants.kDriveKinematics.toWheelSpeeds(chassisSpeeds, new Translation2d(m_rotationX, m_rotationY)).frontLeftMetersPerSecond, 
+      driveConstants.kDriveKinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).frontRightMetersPerSecond, 
+      driveConstants.kDriveKinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).rearLeftMetersPerSecond, 
+      driveConstants.kDriveKinematics.toWheelSpeeds(chassisSpeeds,  new Translation2d(m_rotationX, m_rotationY)).rearRightMetersPerSecond);
 
-    driveWheelSpeeds.desaturate(driveConstants.maxAttainableMetersPerSecond);
+    driveWheelSpeeds.desaturate(driveConstants.kMaxAttainableMetersPerSecond);
 
-    //converting each wheel's requested M/s velocity to RPM velocity. 
-    m_desiredFrontLeftRPM = metersPerSecondToRPM(driveWheelSpeeds.frontLeftMetersPerSecond);
-    m_desiredFrontRightRPM = metersPerSecondToRPM(driveWheelSpeeds.frontRightMetersPerSecond);
-    m_desiredRearLeftRPM = metersPerSecondToRPM(driveWheelSpeeds.rearLeftMetersPerSecond);
-    m_desiredRearRightRPM = metersPerSecondToRPM(driveWheelSpeeds.rearRightMetersPerSecond);
-
-    //setting reference RPM for each drive wheel
-    m_frontLeftPIDFF.setReference(m_desiredFrontLeftRPM, ControlType.kSmartVelocity, 0);
-    m_frontRightPIDFF.setReference(m_desiredFrontRightRPM, ControlType.kSmartVelocity, 0);
-    m_rearRightPIDFF.setReference(m_desiredRearRightRPM, ControlType.kSmartVelocity, 0);
-    m_rearLeftPIDFF.setReference(m_desiredRearLeftRPM, ControlType.kSmartVelocity, 0);
+    setDriveWheelMetersPerSecond(new MecanumDriveWheelSpeeds(driveWheelSpeeds.frontLeftMetersPerSecond, driveWheelSpeeds.frontRightMetersPerSecond,
+    driveWheelSpeeds.rearLeftMetersPerSecond, driveWheelSpeeds.rearRightMetersPerSecond));
 
   }
 
@@ -306,7 +293,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
   //conversion from wheel metersperSecond to rpm. 
   private double metersPerSecondToRPM(double meterspersecond) {
-    return (meterspersecond / driveConstants.wheelCircumferenceMeters) * 60;
+    return (meterspersecond / driveConstants.kWheelCircumferenceMeters) * 60;
   }
 
   @Override
@@ -332,6 +319,14 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     rearLeftSparkMax.setVoltage(volts.rearLeftVoltage);
     frontRightSparkMax.setVoltage(volts.frontRightVoltage);
     rearRightSparkMax.setVoltage(volts.rearRightVoltage);
+  }
+
+  public void setDriveWheelMetersPerSecond(MecanumDriveWheelSpeeds speeds){
+    m_frontLeftPIDFF.setReference(metersPerSecondToRPM(speeds.frontLeftMetersPerSecond), ControlType.kSmartVelocity, 0);
+    m_frontRightPIDFF.setReference(metersPerSecondToRPM(speeds.frontRightMetersPerSecond), ControlType.kSmartVelocity, 0);
+    m_rearRightPIDFF.setReference(metersPerSecondToRPM(speeds.rearRightMetersPerSecond), ControlType.kSmartVelocity, 0);
+    m_rearLeftPIDFF.setReference(metersPerSecondToRPM(speeds.rearLeftMetersPerSecond), ControlType.kSmartVelocity, 0);
+
   }
 
   // returns the read position of the robot on the field

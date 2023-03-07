@@ -79,7 +79,7 @@ public class Sensors extends SubsystemBase {
 
       // Construct PhotonPoseEstimator
       this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP, 
-      frontCamera, visionConstants.robotToFrontCamMeters);
+      frontCamera, visionConstants.kRobotToFrontCamMeters);
 
       photonFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
       

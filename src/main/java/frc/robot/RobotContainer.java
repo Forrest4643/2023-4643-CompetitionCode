@@ -43,7 +43,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.driveConstants;
-import frc.robot.commands.cartesianMecanumDrive;
+import frc.robot.commands.CartesianMecanumDrive;
+import frc.robot.commands.ManipControl;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -60,11 +61,18 @@ public class RobotContainer implements Loggable{
   String trajectoryJSON = "Output/Ball1.wpilib.json";
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
+
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
+  private ArmSubsystem m_armSubsystem = new ArmSubsystem(m_sensors);
+  private WristSubsystem m_wristSubsystem = new WristSubsystem(m_sensors);
+  private TelescopingSubsystem m_telescopingSubsystem = new TelescopingSubsystem();
+
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
 
-  private cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors,
+  private Command m_manipControl = new ManipControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
+
+  private CartesianMecanumDrive m_cartesianMecanumDrive = new CartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
       () -> m_driveController.getRawAxis(XboxController.Axis.kLeftY.value), 
         () -> -m_driveController.getRawAxis(XboxController.Axis.kRightX.value));
@@ -77,6 +85,7 @@ public class RobotContainer implements Loggable{
 
     // Configure the button bindings
     configureButtonBindings();
+
     try {
       Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
       Auto1 = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
@@ -86,6 +95,7 @@ public class RobotContainer implements Loggable{
 
     m_driveSubsystem.setDefaultCommand(m_cartesianMecanumDrive);
 
+    m_armSubsystem.setDefaultCommand(m_manipControl);
   }
 
   private void configureButtonBindings() {
@@ -113,7 +123,7 @@ public class RobotContainer implements Loggable{
                 autoConstants.kMaxSpeedMetersPerSecond,
                 autoConstants.kMaxAccelerationMetersPerSecondSquared)
             // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(driveConstants.driveKinematics);
+            .setKinematics(driveConstants.kDriveKinematics);
 
     // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory =
@@ -127,34 +137,18 @@ public class RobotContainer implements Loggable{
             config);
 
   MecanumControllerCommand mecanumControllerCommand =
-  new MecanumControllerCommand(
-      exampleTrajectory,
-      m_driveSubsystem::getPose,
-      autoConstants.kFeedforward,
-      driveConstants.driveKinematics,
+   new MecanumControllerCommand(
+    exampleTrajectory, 
+    m_driveSubsystem::getPose,
+     driveConstants.kDriveKinematics, 
+     autoConstants.kxPID, 
+     autoConstants.kyPID, 
+     autoConstants.kthetaPID, 
+     autoConstants.kMaxSpeedMetersPerSecond, 
+     m_driveSubsystem::setDriveWheelMetersPerSecond, 
+     m_driveSubsystem);
 
-      // Position contollers
-      new PIDController(autoConstants.kPXController, autoConstants.kIXController, autoConstants.kDXController),
-      new PIDController(autoConstants.kPYController, autoConstants.kIYController, autoConstants.kDYController),
-      new ProfiledPIDController(
-          autoConstants.kPThetaController, autoConstants.kIThetaController, autoConstants.kDThetaController, autoConstants.kThetaControllerConstraints),
-
-      // Needed for normalizing wheel speeds
-      autoConstants.kMaxSpeedMetersPerSecond,
-
-      // Velocity PID's
-      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
-      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
-      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
-      new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
-      m_driveSubsystem::getCurrentWheelSpeedRPMs,
-      m_driveSubsystem::setDriveMotorControllersVolts, // Consumer for the output motor voltages
-      m_driveSubsystem);
-
-      // m_driveSubsystem.resetOdometry(new Pose2d());
-      System.out.println("Path following started!");
-      return mecanumControllerCommand.andThen(() -> m_driveSubsystem.stopMotors());
-
+    return mecanumControllerCommand.andThen(m_driveSubsystem::stopMotors);
   }
 }
 

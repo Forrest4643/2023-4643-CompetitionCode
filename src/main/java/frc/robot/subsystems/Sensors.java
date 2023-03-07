@@ -30,6 +30,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.visionConstants;
 import io.github.oblarg.oblog.annotations.Config;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -54,15 +55,6 @@ public class Sensors extends SubsystemBase {
 
   public PhotonCamera frontCamera = new PhotonCamera("frontAprilTagCamera");
 
-  //public PhotonCamera rearCamera = new PhotonCamera("rearAprilTagCamera");
-
-  //Cam mounted facing forward, half a meter forward of center.
-  Transform3d robotToFrontCam = new Transform3d(
-      new Translation3d(0.5, 0.0, 0.349), 
-      new Rotation3d(0, Units.degreesToRadians(5),Units.degreesToRadians(0))); 
-
-
-
   /** Creates a new IndexSensors. */
   public Sensors() {
 
@@ -82,10 +74,13 @@ public class Sensors extends SubsystemBase {
 
      // sends WPI provided AprilTag locations to the PhotonVision field layout object
     try {
-      this.aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+      this.aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(
+        AprilTagFields.k2023ChargedUp.m_resourceFile);
 
       // Construct PhotonPoseEstimator
-      this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP, frontCamera, robotToFrontCam);
+      this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP, 
+      frontCamera, visionConstants.robotToFrontCamMeters);
+
       photonFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
       
     } catch (IOException e) {
@@ -97,7 +92,7 @@ public class Sensors extends SubsystemBase {
   @Override
   public void periodic() {
     //sending info for debugging to the SmartDashboard
-    SmartDashboard.putNumber("Yaw", navXYaw());
+    SmartDashboard.putNumber("Yaw", navXYawDeg());
     SmartDashboard.putNumber("Pitch", navXPitch());
     SmartDashboard.putNumber("Roll", navXRoll());
   }
@@ -106,7 +101,8 @@ public class Sensors extends SubsystemBase {
   public void simulationPeriodic() {
   }
 
-  public double armNavxPitch() {
+
+  public double armNavxPitchdeg() {
     return armNavX.getPitch();
   }
 
@@ -114,7 +110,7 @@ public class Sensors extends SubsystemBase {
     return navX.getRotation2d();
   }
 
-  public double navXYaw() {
+  public double navXYawDeg() {
     return navX.getYaw();
   }
 
@@ -124,7 +120,8 @@ public class Sensors extends SubsystemBase {
   }
 
   public double NavXFusedHeading() {
-    return MathUtil.inputModulus(navX.getFusedHeading() + m_fusedHeadingOffset, 0, 360);
+    return MathUtil.inputModulus(navX.getFusedHeading() + 
+      m_fusedHeadingOffset, 0, 360);
   }
 
   public double navXPitch() {

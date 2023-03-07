@@ -42,7 +42,7 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.autoConstants;
-import frc.robot.Constants.dConstants;
+import frc.robot.Constants.driveConstants;
 import frc.robot.commands.cartesianMecanumDrive;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -113,7 +113,7 @@ public class RobotContainer implements Loggable{
                 autoConstants.kMaxSpeedMetersPerSecond,
                 autoConstants.kMaxAccelerationMetersPerSecondSquared)
             // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(m_driveSubsystem.m_kinematics);
+            .setKinematics(driveConstants.driveKinematics);
 
     // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory =
@@ -131,7 +131,7 @@ public class RobotContainer implements Loggable{
       exampleTrajectory,
       m_driveSubsystem::getPose,
       autoConstants.kFeedforward,
-      m_driveSubsystem.m_kinematics,
+      driveConstants.driveKinematics,
 
       // Position contollers
       new PIDController(autoConstants.kPXController, autoConstants.kIXController, autoConstants.kDXController),
@@ -147,7 +147,7 @@ public class RobotContainer implements Loggable{
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
       new PIDController(autoConstants.kPwheelVel, autoConstants.kIwheelVel, autoConstants.kDwheelVel),
-      m_driveSubsystem::getCurrentWheelSpeeds,
+      m_driveSubsystem::getCurrentWheelSpeedRPMs,
       m_driveSubsystem::setDriveMotorControllersVolts, // Consumer for the output motor voltages
       m_driveSubsystem);
 

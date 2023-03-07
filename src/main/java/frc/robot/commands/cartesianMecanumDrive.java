@@ -14,7 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants.dConstants;
+import frc.robot.Constants.driveConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
 import io.github.oblarg.oblog.annotations.Config;
@@ -27,8 +27,8 @@ public class cartesianMecanumDrive extends CommandBase  {
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
 
   @Config
-  private PIDController driveHeadingController = new PIDController(dConstants.steerkP, dConstants.steerkI,
-      dConstants.steerkD, 0.02);
+  private PIDController driveHeadingController = new PIDController(driveConstants.steerkP, driveConstants.steerkI,
+      driveConstants.steerkD, 0.02);
 
   //static constant
   private double headingkS = 0.06;
@@ -82,8 +82,8 @@ public class cartesianMecanumDrive extends CommandBase  {
       DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.m_sensors = m_sensors;
-    this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), dConstants.inputDeadband) * dConstants.speedSinMultiplier);
-    this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), dConstants.inputDeadband) * dConstants.speedSinMultiplier);
+    this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), driveConstants.inputDeadband) * driveConstants.speedSinMultiplier);
+    this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), driveConstants.inputDeadband) * driveConstants.speedSinMultiplier);
     this.driverHeadingAdjustment = driverHeadingAdjustment;
     m_expectedHeading = 0;
 
@@ -106,12 +106,12 @@ public class cartesianMecanumDrive extends CommandBase  {
       dhaOUT = -MathUtil.applyDeadband(
           Math.sin(
               turnSlewRateLimiter.calculate(Math.abs(dha))),
-          dConstants.inputDeadband);
+          driveConstants.inputDeadband);
     } else {
       dhaOUT = MathUtil.applyDeadband(
           Math.sin(
               turnSlewRateLimiter.calculate(Math.abs(dha))),
-          dConstants.inputDeadband);
+          driveConstants.inputDeadband);
     }
 
     // Takes input from the driver and adjusts the robot's expected heading

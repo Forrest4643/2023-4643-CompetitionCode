@@ -7,27 +7,37 @@
 package frc.robot;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+
 
 public class Constants implements Loggable {
-    //Drive Constants
-    public static class dConstants implements Loggable{
+    public static class driveConstants implements Loggable{
         public static final int leftFrontID = 1;
         public static final int leftRearID = 2;
         public static final int rightFrontID = 4;
         public static final int rightRearID = 3;
         public static final double inputDeadband = 0.08;
 
-        public static final Translation2d frontLeftWheel = new Translation2d(0.324, 0.219);
-        public static final Translation2d frontRightWheel = new Translation2d(0.324, -0.219);
-        public static final Translation2d rearLeftWheel = new Translation2d(-0.324, 0.219);
-        public static final Translation2d rearRightWheel = new Translation2d(-0.324, -0.219);
+        private static final Translation2d frontLeftWheelMeters = new Translation2d(-0.302578, 0.254000);
+        private static final Translation2d frontRightWheelMeters = new Translation2d(0.302578, 0.254000);
+        private static final Translation2d rearLeftWheelMeters = new Translation2d(-0.302578, -0.254000);
+        private static final Translation2d rearRightWheelMeters = new Translation2d(0.302578, -0.254000);
+
+        public static final MecanumDriveKinematics driveKinematics = new MecanumDriveKinematics(frontLeftWheelMeters, frontRightWheelMeters, rearLeftWheelMeters, rearRightWheelMeters); 
+
+
         public static final int driveSparkSmartCurrentLimit = 50; //Amps
         
         public static final double steerkP = 0.04;
@@ -39,36 +49,43 @@ public class Constants implements Loggable {
 
         public static final double maxAttainableMetersPerSecond = 4.5;
 
-        public static final double velocityConversionFactor = 0.1; //10:1 versaplanetary
-        public static final double positionConversionFactor = 0.04787787204; //0.0762m wheel radius
+        public static final double wheelCircumferenceMeters = 0.4787787204;
+
+        public static final double velocityConversionFactorRPM = 0.14285714285; //7:1 versaplanetary
+        public static final double positionConversionFactorMeters = wheelCircumferenceMeters / 10; //0.0762m (3in) wheel radius
+
+        //multiplier for drive controller sin function, this is used to get a nicer response curve from the controller
         public static final double speedSinMultiplier = 1.188;
 
+
     }
 
-    public static final class aConstants {
+    public static final class armConstants {
         public static final int armID = 5;
         public static final int teleID = 6;
+
+        public static double maxVelocityDegSec = 90;
+        public static double maxAccelDegSec = 45;
      
+    }
+
+    public static final class wristConstants {
+        public static final int wristID = 7;
+        public static final double maxVelocityMeters = 0;
+        public static final double maxAccelMeters = 0;
 
     }
-    //Pneumatic constants
-    public static final class pConstants {
-        public static final int compressorID = 0;
 
+    public static final class mandibleConstants {
+        public static final int mandibleID = 8;
     }
-    //Vision constants
-    public static final class vConstants {
-        public static final double cameraHeightM = Units.inchesToMeters(37.650);
-        public static final double targetGroundHeightM = Units.inchesToMeters(104.000);
-        public static final double cameraAngleRAD = Units.degreesToRadians(55);
-        public static final double camDiagFOV = 170.0; // degrees - assume wide-angle camera
-        public static final double maxLEDRange = 20.0; // meters
-        public static final int camResolutionWidth = 640; // pixels
-        public static final int camResolutionHeight = 480; // pixels
-        public static final double minTargetAreaPIX = 10; // square pixels
+ 
+    public static final class visionConstants {
+        public static final Transform3d robotToFrontCamMeters = new  Transform3d(
+            new Translation3d(-0.177, -0.052878, 0.763443), 
+            new Rotation3d(0, -5, 0));
+    }
 
-    }
-    //Auto constants
     public static class autoConstants implements Loggable {
         
 

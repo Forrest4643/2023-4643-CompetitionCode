@@ -95,6 +95,8 @@ public class Sensors extends SubsystemBase {
     SmartDashboard.putNumber("Yaw", navXYawDeg());
     SmartDashboard.putNumber("Pitch", navXPitch());
     SmartDashboard.putNumber("Roll", navXRoll());
+
+    SmartDashboard.putNumber("armNavX pitch", armNavxPitchdeg());
   }
 
   @Override
@@ -103,7 +105,7 @@ public class Sensors extends SubsystemBase {
 
 
   public double armNavxPitchdeg() {
-    return armNavX.getPitch();
+    return armNavX.getRoll();
   }
 
   public Rotation2d navXRotation2d() {

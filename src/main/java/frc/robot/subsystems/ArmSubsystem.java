@@ -14,6 +14,7 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants.armConstants;
 import io.github.oblarg.oblog.Loggable;
@@ -105,11 +106,16 @@ public class ArmSubsystem extends ProfiledPIDSubsystem implements Loggable{
 
     this.m_sensors = m_Sensors;
 
-    m_armEncoder.setPositionConversionFactor(0.00537109374);
+    m_armEncoder.setPositionConversionFactor(1);
 
-    m_armEncoder.setPosition(Units.degreesToRadians(m_sensors.armNavxPitchdeg()));
+    m_armEncoder.setPosition(m_sensors.armNavxPitchdeg());
   }
 
+  @Override
+  public void periodic() {
+    super.periodic();
+    SmartDashboard.putNumber("armMotorPosition", m_armEncoder.getPosition());
+  }
   @Override
   public void useOutput(double output, TrapezoidProfile.State setpoint) {
     m_armMotor.setVoltage(output + 

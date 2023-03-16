@@ -27,6 +27,8 @@ import io.github.oblarg.oblog.Logger;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;    
 
+  private Command m_cartesianMecanumDrive;
+
   private RobotContainer m_robotContainer;
 
   
@@ -108,7 +110,12 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    //m_robotContainer.teleInit();
+
+    m_cartesianMecanumDrive = m_robotContainer.m_cartesianMecanumDrive;
+
+    m_robotContainer.unStow();
+
+    m_cartesianMecanumDrive.schedule();
   }
 
   /** This function is called periodically during operator control. */

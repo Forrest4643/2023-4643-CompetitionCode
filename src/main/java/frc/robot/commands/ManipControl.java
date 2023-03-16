@@ -45,9 +45,6 @@ public class ManipControl extends CommandBase implements Loggable{
   private boolean m_coneDeploy = false;
 
   @Log
-  private boolean m_deadSwitch = false;
-
-  @Log
   private boolean m_manualWristControl = false; 
 
 
@@ -66,7 +63,6 @@ public class ManipControl extends CommandBase implements Loggable{
   public void initialize() {
     m_deployHeight = 0;
     m_coneDeploy = false;
-    m_deadSwitch = false;
     m_manualWristControl = false;
     m_deployStatus = kLow;
   }
@@ -75,7 +71,6 @@ public class ManipControl extends CommandBase implements Loggable{
   @Override
   public void execute() {
 
-    m_deadSwitch = (m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > .5);
     m_manualWristControl = (m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > .5);
 
     if (m_operateController.getAButtonPressed()) {
@@ -98,11 +93,8 @@ public class ManipControl extends CommandBase implements Loggable{
       activeGamepiece = "CUBE";
     }
 
-    if(!m_deadSwitch){
       deploySelect(m_deployHeight, m_coneDeploy);
-    }
-
-   
+    
   }
 
   // Called once the command ends or is interrupted.

@@ -22,7 +22,7 @@ import io.github.oblarg.oblog.annotations.Config;
 public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
 
   private static double m_kS = 0;
-  private static double m_kG = 0.65;
+  private static double m_kG = 0;
   private static double m_kV = 3.63;
   private static double m_kA = 0.07;
 
@@ -99,6 +99,8 @@ public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
             new TrapezoidProfile.Constraints(wristConstants.kMaxVelocityMeters, wristConstants.kMaxAccelMeter)));
 
             this.m_sensors = m_Sensors;
+
+            getController().setGoal(-80);
   }
 
   @Override
@@ -107,16 +109,26 @@ public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
     SmartDashboard.putNumber("wristPosition:", m_wristEncoder.getPosition());
   }
 
-
-
   @Override
   public void useOutput(double output, TrapezoidProfile.State setpoint) {
     m_wristMotor.setVoltage(output + m_wristFF.calculate(setpoint.position, setpoint.velocity));
+  }
+
+  public boolean atSetpoint() {
+    return getController().atSetpoint();
   }
 
   @Override
   public double getMeasurement() {
     // Return the process variable measurement here
     return Units.degreesToRadians(m_wristEncoder.getPosition());
+  }
+  
+  public void unStow() {
+    getController().setGoal(80);
+  }
+
+  public void matchStow() {
+    getController().setGoal(80);
   }
 }

@@ -72,10 +72,18 @@ public class RobotContainer implements Loggable{
 
   private Command m_manipControl = new ManipControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
 
-  private CartesianMecanumDrive m_cartesianMecanumDrive = new CartesianMecanumDrive(m_driveSubsystem, m_sensors,
+  public CartesianMecanumDrive m_cartesianMecanumDrive = new CartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
       () -> m_driveController.getRawAxis(XboxController.Axis.kLeftY.value), 
         () -> -m_driveController.getRawAxis(XboxController.Axis.kRightX.value));
+  
+  public Command unStow() {
+      return new InstantCommand(m_armSubsystem::enable).andThen((m_armSubsystem::unStow1)).until(
+          m_armSubsystem::atSetpoint).andThen(m_wristSubsystem::enable).andThen(
+            m_wristSubsystem::unStow).until(
+              m_wristSubsystem::atSetpoint).andThen(
+                m_armSubsystem::unStow2);
+  }
 
   public RobotContainer() {
 
@@ -93,9 +101,6 @@ public class RobotContainer implements Loggable{
       DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
     }
 
-    m_driveSubsystem.setDefaultCommand(m_cartesianMecanumDrive);
-
-    m_armSubsystem.setDefaultCommand(m_manipControl);
   }
 
   private void configureButtonBindings() {
@@ -113,6 +118,12 @@ public class RobotContainer implements Loggable{
     
     new JoystickButton(m_driveController, XboxController.Button.kLeftStick.value)
       .onTrue(new InstantCommand(m_cartesianMecanumDrive::centeredRotation)); //Centered rotation on left stick press
+
+
+    Trigger armDeadSwitch = new Trigger(() -> (m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5));
+
+    armDeadSwitch.onTrue(m_manipControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow)
+      .alongWith(new InstantCommand(m_armSubsystem::matchStow)));
   }
 
   public Command getAutonomousCommand() {

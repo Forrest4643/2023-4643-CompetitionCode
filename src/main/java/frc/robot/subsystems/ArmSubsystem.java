@@ -7,7 +7,10 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxAlternateEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxAlternateEncoder.Type;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
@@ -15,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants.armConstants;
 import io.github.oblarg.oblog.Loggable;
@@ -24,7 +28,9 @@ public class ArmSubsystem extends ProfiledPIDSubsystem implements Loggable{
 
   public final CANSparkMax m_armMotor = new CANSparkMax(armConstants.kArmID, MotorType.kBrushless);
 
-  public RelativeEncoder m_armEncoder = m_armMotor.getEncoder();
+  public RelativeEncoder m_armMotorEncoder = m_armMotor.getEncoder();
+
+  public RelativeEncoder m_armEncoder = m_armMotor.getAlternateEncoder(Type.kQuadrature, 8064);
 
   private Sensors m_sensors;
 
@@ -106,16 +112,21 @@ public class ArmSubsystem extends ProfiledPIDSubsystem implements Loggable{
 
     this.m_sensors = m_Sensors;
 
-    m_armEncoder.setPositionConversionFactor(1);
+    m_armEncoder.setPositionConversionFactor(0.34375);
+
+    m_armMotorEncoder.setPositionConversionFactor(123.75);
 
     m_armEncoder.setPosition(m_sensors.armNavxPitchdeg());
+    m_armMotorEncoder.setPositionConversionFactor(m_sensors.armNavxPitchdeg());
   }
 
   @Override
   public void periodic() {
     super.periodic();
-    SmartDashboard.putNumber("armMotorPosition", m_armEncoder.getPosition());
+    SmartDashboard.putNumber("armMotorPosition", m_armMotorEncoder.getPosition());
+    SmartDashboard.putNumber("armEncoderPosition", m_armEncoder.getPosition());
   }
+
   @Override
   public void useOutput(double output, TrapezoidProfile.State setpoint) {
     m_armMotor.setVoltage(output + 
@@ -128,4 +139,22 @@ public class ArmSubsystem extends ProfiledPIDSubsystem implements Loggable{
     // Return the process variable measurement here
     return Units.degreesToRadians(m_armEncoder.getPosition());
   }
+
+  public boolean atSetpoint() {
+    return getController().atSetpoint();
+  }
+
+  public void unStow1() {
+    getController().setGoal(36);
+  }
+
+  public void unStow2() {
+    getController().setGoal(78.5);
+  }
+
+  public void matchStow() {
+    getController().setGoal(78.5);
+  }
+
+
 }

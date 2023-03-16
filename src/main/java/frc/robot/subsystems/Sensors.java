@@ -105,7 +105,7 @@ public class Sensors extends SubsystemBase {
 
 
   public double armNavxPitchdeg() {
-    return armNavX.getRoll();
+    return -armNavX.getRoll();
   }
 
   public Rotation2d navXRotation2d() {

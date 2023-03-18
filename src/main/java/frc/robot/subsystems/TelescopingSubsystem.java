@@ -12,28 +12,11 @@ import io.github.oblarg.oblog.annotations.Config;
 
 public class TelescopingSubsystem extends ProfiledPIDSubsystem implements Loggable{
   private static double m_kP = 0;
-  @Config
-  public void setTelescopingkP(double kP) {
-    if(kP != 0) {
-      m_kP = kP;
-    }
-  }
 
   private static double m_kI = 0;
-  @Config
-  public void setTelescopingkI(double kI) {
-    if(kI != 0) {
-      m_kI = kI;
-    }
-  }
 
   private static double m_kD = 0;
-  @Config
-  public void setTelescopingkD(double kD) {
-    if(kD != 0) {
-      m_kD = kD;
-    }
-  }
+
   /** Creates a new TelescopingSubsystem. */
   public TelescopingSubsystem() {
     super(

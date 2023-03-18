@@ -116,6 +116,10 @@ public class Sensors extends SubsystemBase {
     return navX.getYaw();
   }
 
+  public double wrappedNavXHeading() {
+    return MathUtil.inputModulus(-navX.getYaw(), 0, 360);
+  }
+
   @Config
   public void setFusedHeadingOffset(double offset) {
     m_fusedHeadingOffset = offset;

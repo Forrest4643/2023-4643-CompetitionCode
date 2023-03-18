@@ -44,7 +44,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.driveConstants;
 import frc.robot.commands.CartesianMecanumDrive;
-import frc.robot.commands.ManipControl;
+import frc.robot.commands.deployControl;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -62,6 +62,8 @@ public class RobotContainer implements Loggable{
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
 
+  private Trigger armDeadSwitch;
+
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private ArmSubsystem m_armSubsystem = new ArmSubsystem(m_sensors);
   private WristSubsystem m_wristSubsystem = new WristSubsystem(m_sensors);
@@ -70,7 +72,7 @@ public class RobotContainer implements Loggable{
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
 
-  private Command m_manipControl = new ManipControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
+  private Command m_manipControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
 
   public CartesianMecanumDrive m_cartesianMecanumDrive = new CartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
@@ -119,11 +121,11 @@ public class RobotContainer implements Loggable{
     new JoystickButton(m_driveController, XboxController.Button.kLeftStick.value)
       .onTrue(new InstantCommand(m_cartesianMecanumDrive::centeredRotation)); //Centered rotation on left stick press
 
+    
+    armDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
 
-    Trigger armDeadSwitch = new Trigger(() -> (m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5));
-
-    armDeadSwitch.onTrue(m_manipControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow)
-      .alongWith(new InstantCommand(m_armSubsystem::matchStow)));
+    armDeadSwitch.whileTrue(new InstantCommand(m_armSubsystem::enable).alongWith(new InstantCommand(m_armSubsystem::armHorizontal)))
+    .whileFalse(new InstantCommand(m_armSubsystem::enable).alongWith(new InstantCommand(m_armSubsystem::armHorizontal)));
   }
 
   public Command getAutonomousCommand() {

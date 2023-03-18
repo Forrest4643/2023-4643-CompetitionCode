@@ -63,36 +63,13 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   private SparkMaxPIDController m_frontRightPIDFF = frontRightSparkMax.getPIDController();
 
   public double sparkMAXVelocitykP = 0.00015;
-  @Config
-  public void setSparkkP(double kP) {
-      if (kP != 0){
-        sparkMAXVelocitykP = kP;
-      }
-  }
 
   public double sparkMAXVelocitykI = 0;
-  @Config
-  public void setSparkkI(double kI) {
-    if (kI != 0){
-      sparkMAXVelocitykI = kI;
-    }
-  }
 
   public double sparkMAXVelocitykD = 0.0;
-  @Config
-  public void setSparkkD(double kD) {
-    if (kD != 0) {
-      sparkMAXVelocitykD = kD;
-    }
-  }
 
-  public double sparkMAXVelocitykF = 0.0025;
-  @Config
-  public void setSparkkF(double kF) {
-    if (kF != 0) {
-      sparkMAXVelocitykF = kF;
-    }
-  }
+  public double sparkMAXVelocitykF = 0.001;
+
 
   /*
    * creating a mecanum drive kinematics object which contains
@@ -224,7 +201,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
       //converting the -1 to 1 controller input to meters per second
       xSpeed.getAsDouble() * driveConstants.kMaxAttainableMetersPerSecond, 
       ySpeed.getAsDouble() * driveConstants.kMaxAttainableMetersPerSecond,
-        rotationSpeed.getAsDouble(), Rotation2d.fromDegrees(m_sensors.NavXFusedHeading()));    
+        rotationSpeed.getAsDouble(), Rotation2d.fromDegrees(m_sensors.wrappedNavXHeading()));    
 
     //these are the x and y offsets for the center of rotation
     m_rotationX = corX.getAsDouble();
@@ -284,7 +261,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
     // sends gyro heading and wheel positions to pose estimator
     m_drivePoseEstimator.updateWithTime(Timer.getFPGATimestamp(), 
-      new Rotation2d(Units.degreesToRadians(m_sensors.NavXFusedHeading())), 
+      new Rotation2d(Units.degreesToRadians(m_sensors.wrappedNavXHeading())), 
         m_driveWheelPositions);
 
     // updating the robots estimated pose on the field
@@ -339,7 +316,7 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
     resetDriveEncoders();
 
     m_driveOdometry.resetPosition(new Rotation2d(
-      Units.degreesToRadians(m_sensors.NavXFusedHeading())), 
+      Units.degreesToRadians(m_sensors.wrappedNavXHeading())), 
         m_driveWheelPositions, new Pose2d());
   }
 }

@@ -113,7 +113,7 @@ public class Robot extends TimedRobot {
 
     m_cartesianMecanumDrive = m_robotContainer.m_cartesianMecanumDrive;
 
-    m_robotContainer.unStow();
+    // m_robotContainer.unStow();
 
     m_cartesianMecanumDrive.schedule();
   }

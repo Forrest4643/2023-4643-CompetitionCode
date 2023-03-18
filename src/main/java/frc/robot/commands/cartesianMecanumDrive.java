@@ -26,34 +26,16 @@ public class CartesianMecanumDrive extends CommandBase  {
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
   private SlewRateLimiter turnSlewRateLimiter = new SlewRateLimiter(1, -50, 0);
 
-  @Config
   private PIDController driveHeadingController = new PIDController(driveConstants.steerkP, driveConstants.steerkI,
       driveConstants.steerkD, 0.02);
 
   //static constant
   private double headingkS = 0.06;
-  @Config
-  public void setHeadingKS(double kS) {
-    if (kS != 0) {
-      headingkS = kS;
-    }
-  }
   //velocity constant
   private double headingkV = 0.0;
-  @Config
-  public void setHeadingkV(double kV) {
-    if (kV != 0) {
-      headingkV = kV;
-    }
-  }
   //acceleration constant
   private double headingkA = 0.0;
-  @Config
-  public void setHeadingkA(double kA) {
-    if (kA != 0) {
-      headingkA = kA;
-    }
-  }
+
 
   private SimpleMotorFeedforward driveHeadingFF = new SimpleMotorFeedforward(headingkS, headingkV, headingkA);
 
@@ -64,13 +46,6 @@ public class CartesianMecanumDrive extends CommandBase  {
   private int m_rotationSelect = 0;
 
   private double m_steerSensitivity = 4;
-
-  @Config
-  public void setM_steerSensitivity(double multiplier) {
-    if (multiplier != 0) {
-      m_steerSensitivity = multiplier;
-    }
-  }
 
   @Log
   private String rotationMode = "COR: Centered";
@@ -118,7 +93,7 @@ public class CartesianMecanumDrive extends CommandBase  {
     m_expectedHeading = MathUtil.inputModulus(m_expectedHeading + (dhaOUT * m_steerSensitivity), 0, 360);
 
     // sending heading to PID controller
-    double rotationOutput = driveHeadingController.calculate(LinearFilter.movingAverage(3).calculate(-m_sensors.NavXFusedHeading()), m_expectedHeading)
+    double rotationOutput = driveHeadingController.calculate(m_sensors.wrappedNavXHeading(), m_expectedHeading)
         + driveHeadingFF.calculate(driveHeadingController.getPositionError());
 
     switch (m_rotationSelect) {

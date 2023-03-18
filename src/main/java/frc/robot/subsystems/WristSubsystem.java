@@ -30,55 +30,6 @@ public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
   private static double m_kI = 0;
   private static double m_kD = 0;
 
-  @Config
-  public void setWristkS(double kS) {
-    if (kS != 1) {
-      m_kS = kS;
-    }
-  }
-
-  @Config
-  public void setWristkG(double kG) {
-    if (kG != 1) {
-      m_kG = kG;
-    }
-  }
-
-  @Config
-  public void setWristkV(double kV) {
-    if (kV != 1) {
-      m_kV = kV;
-    }
-  }
-
-  @Config
-  public void setWristkA(double kA) {
-    if (kA != 0) {
-      m_kA = kA;
-    }
-  }
-
-  @Config
-  public void setArmkP(double kP) {
-    if (kP != 0) {
-      m_kP = kP;
-    }
-  }
-
-  @Config
-  public void setArmkI(double kI) {
-    if (kI != 0) {
-      m_kI = kI;
-    }
-  }
-
-  @Config
-  public void setArmkD(double kD) {
-    if (kD != 0) {
-      m_kD = kD;
-    }
-  }
-
   private Sensors m_sensors;
 
   public final CANSparkMax m_wristMotor = new CANSparkMax(wristConstants.kWristID, MotorType.kBrushless);
@@ -99,6 +50,8 @@ public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
             new TrapezoidProfile.Constraints(wristConstants.kMaxVelocityMeters, wristConstants.kMaxAccelMeter)));
 
             this.m_sensors = m_Sensors;
+            m_wristEncoder.setPositionConversionFactor(360);
+            m_wristEncoder.setZeroOffset(60);
 
             getController().setGoal(-80);
   }

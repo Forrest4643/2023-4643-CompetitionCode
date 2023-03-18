@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import io.github.oblarg.oblog.Loggable;
 
 
@@ -26,20 +27,20 @@ public class Constants implements Loggable {
         public static final int kRightRearID = 3;
         public static final double kInputDeadband = 0.08;
 
-        private static final Translation2d kFrontLeftWheelMeters = new Translation2d(-0.302578, 0.254000);
-        private static final Translation2d kFrontRightWheelMeters = new Translation2d(0.302578, 0.254000);
-        private static final Translation2d kRearLeftWheelMeters = new Translation2d(-0.302578, -0.254000);
-        private static final Translation2d kRearRightWheelMeters = new Translation2d(0.302578, -0.254000);
+        private static final Translation2d kFrontLeftWheelMeters = new Translation2d(0.302578, 0.254000);
+        private static final Translation2d kFrontRightWheelMeters = new Translation2d(0.302578, -0.254000);
+        private static final Translation2d kRearLeftWheelMeters = new Translation2d(-0.302578, 0.254000);
+        private static final Translation2d kRearRightWheelMeters = new Translation2d(-0.302578, -0.254000);
 
         public static final MecanumDriveKinematics kDriveKinematics = new MecanumDriveKinematics(kFrontLeftWheelMeters, kFrontRightWheelMeters, kRearLeftWheelMeters, kRearRightWheelMeters); 
 
 
         public static final int kDriveSparkSmartCurrentLimit = 50; //Amps
         
-        public static final double steerkP = 0.04;
+        public static final double steerkP = 0.15;
         public static final double steerkI = 0.0;
-        public static final double steerkD = 0.00001;
-        public static final double steerkF = 0.06;
+        public static final double steerkD = 0.0000075;
+        public static final double steerkF = 0.1;
 
         public static final double kWheelRPMaccel = 750;
 
@@ -50,7 +51,7 @@ public class Constants implements Loggable {
         public static final double kWheelCircumferenceMeters = 0.4787787204;
         public static final double kAllowedVelocityErrorRPM = 5;
         public static final double kVelocityConversionFactorRPM = 0.14285714285; //7:1 versaplanetary
-        public static final double kPositionConversionFactorMeters = kWheelCircumferenceMeters / 10; //0.0762m (3in) wheel radius
+        public static final double kPositionConversionFactorMeters = kWheelCircumferenceMeters / 7; //0.0762m (3in) wheel radius
 
         //multiplier for drive controller sin function, this is used to get a nicer response curve from the controller
         public static final double kSpeedSinMultiplier = 1.188;
@@ -63,12 +64,12 @@ public class Constants implements Loggable {
         public static final double kMaxVelocityDegSec = 90;
         public static final double kMaxAccelDegSec = 45;
 
-        public static final double kScoreLowCubePos = 0;
-        public static final double kScoreMidCubePos = 0;
-        public static final double kScoreHighCubePos = 0;
+        public static final double kScoreLowCubePos = Units.degreesToRadians(0);
+        public static final double kScoreMidCubePos = Units.degreesToRadians(0);
+        public static final double kScoreHighCubePos = Units.degreesToRadians(0);
 
-        public static final double kScoreLowConePos = 0;
-        public static final double kScoreMidConePos = 0;
+        public static final double kScoreLowConePos = Units.degreesToRadians(0);
+        public static final double kScoreMidConePos = Units.degreesToRadians(0);
      
         public static final double kStowPos = 0;
 

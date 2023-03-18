@@ -17,7 +17,7 @@ import frc.robot.subsystems.WristSubsystem;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
-public class ManipControl extends CommandBase implements Loggable{
+public class deployControl extends CommandBase implements Loggable{
   private ArmSubsystem m_armSubsystem;
   private WristSubsystem m_wristSubsystem;
   private TelescopingSubsystem m_telescopingSubsystem;
@@ -49,7 +49,7 @@ public class ManipControl extends CommandBase implements Loggable{
 
 
   /** Creates a new ConeDeploy. */
-  public ManipControl(ArmSubsystem m_ArmSubsystem, WristSubsystem m_WristSubsystem, TelescopingSubsystem m_TelescopingSubsystem, XboxController m_OperateController) {
+  public deployControl(ArmSubsystem m_ArmSubsystem, WristSubsystem m_WristSubsystem, TelescopingSubsystem m_TelescopingSubsystem, XboxController m_OperateController) {
     this.m_armSubsystem = m_ArmSubsystem;
     this.m_wristSubsystem = m_WristSubsystem;
     this.m_operateController = m_OperateController;
@@ -61,6 +61,7 @@ public class ManipControl extends CommandBase implements Loggable{
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    m_armSubsystem.enable();
     m_deployHeight = 0;
     m_coneDeploy = false;
     m_manualWristControl = false;
@@ -70,8 +71,6 @@ public class ManipControl extends CommandBase implements Loggable{
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    m_manualWristControl = (m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > .5);
 
     if (m_operateController.getAButtonPressed()) {
       m_deployHeight = MathUtil.clamp(m_deployHeight - 1, 0, 2);
@@ -99,7 +98,9 @@ public class ManipControl extends CommandBase implements Loggable{
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_armSubsystem.matchStow();
+  }
 
   // Returns true when the command should end.
   @Override
@@ -111,19 +112,19 @@ public class ManipControl extends CommandBase implements Loggable{
     if (coneDeploy == false) {
       switch(deployHeight) {
         case 0:
-        m_armSubsystem.setGoal(armConstants.kScoreLowCubePos);
+        m_armSubsystem.setSetpoint(armConstants.kScoreLowCubePos);
         m_wristSubsystem.setGoal(wristConstants.kScoreLowCubePos);
         m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowCubePos);
         m_deployStatus = kLow;
         break;
         case 1:
-        m_armSubsystem.setGoal(armConstants.kScoreMidCubePos);
+        m_armSubsystem.setSetpoint(armConstants.kScoreMidCubePos);
         m_wristSubsystem.setGoal(wristConstants.kScoreMidCubePos);
         m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidCubePos);
         m_deployStatus = kMid;
         break;
         case 2:
-        m_armSubsystem.setGoal(armConstants.kScoreHighCubePos);
+        m_armSubsystem.setSetpoint(armConstants.kScoreHighCubePos);
         m_wristSubsystem.setGoal(wristConstants.kScoreHighCubePos);
         m_telescopingSubsystem.setGoal(telescopingConstant.kScoreHighCubePos);
         m_deployStatus = kHigh;
@@ -132,13 +133,13 @@ public class ManipControl extends CommandBase implements Loggable{
     } else if (coneDeploy = true) {
       switch(deployHeight) {
         case 0:
-        m_armSubsystem.setGoal(armConstants.kScoreLowConePos);
+        m_armSubsystem.setSetpoint(armConstants.kScoreLowConePos);
         m_wristSubsystem.setGoal(wristConstants.kScoreLowConePos);
         m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowConePos);
         m_deployStatus = kLow;
         break;
         case 1:
-        m_armSubsystem.setGoal(armConstants.kScoreMidConePos);
+        m_armSubsystem.setSetpoint(armConstants.kScoreMidConePos);
         m_wristSubsystem.setGoal(wristConstants.kScoreMidConePos);
         m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidConePos);
         m_deployStatus = kMid;

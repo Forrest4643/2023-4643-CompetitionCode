@@ -6,10 +6,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.armConstants;
-import frc.robot.Constants.telescopingConstant;
 import frc.robot.Constants.wristConstants;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.TelescopingSubsystem;
@@ -61,7 +59,6 @@ public class deployControl extends CommandBase implements Loggable{
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_armSubsystem.enable();
     m_deployHeight = 0;
     m_coneDeploy = false;
     m_manualWristControl = false;
@@ -100,6 +97,7 @@ public class deployControl extends CommandBase implements Loggable{
   @Override
   public void end(boolean interrupted) {
     m_armSubsystem.matchStow();
+    m_wristSubsystem.matchStow();
   }
 
   // Returns true when the command should end.
@@ -112,36 +110,36 @@ public class deployControl extends CommandBase implements Loggable{
     if (coneDeploy == false) {
       switch(deployHeight) {
         case 0:
-        m_armSubsystem.setSetpoint(armConstants.kScoreLowCubePos);
-        m_wristSubsystem.setGoal(wristConstants.kScoreLowCubePos);
-        m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowCubePos);
+        m_armSubsystem.setArmReferenceDEG(armConstants.kScoreLowCubePos);
+        m_wristSubsystem.setWristReference(wristConstants.kScoreLowCubePos);
+        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowCubePos);
         m_deployStatus = kLow;
         break;
         case 1:
-        m_armSubsystem.setSetpoint(armConstants.kScoreMidCubePos);
-        m_wristSubsystem.setGoal(wristConstants.kScoreMidCubePos);
-        m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidCubePos);
+        m_armSubsystem.setArmReferenceDEG(armConstants.kScoreMidCubePos);        
+        m_wristSubsystem.setWristReference(wristConstants.kScoreMidCubePos);
+        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidCubePos);
         m_deployStatus = kMid;
         break;
         case 2:
-        m_armSubsystem.setSetpoint(armConstants.kScoreHighCubePos);
-        m_wristSubsystem.setGoal(wristConstants.kScoreHighCubePos);
-        m_telescopingSubsystem.setGoal(telescopingConstant.kScoreHighCubePos);
+        m_armSubsystem.setArmReferenceDEG(armConstants.kScoreHighCubePos);        
+        m_wristSubsystem.setWristReference(wristConstants.kScoreHighCubePos);
+        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreHighCubePos);
         m_deployStatus = kHigh;
         break;
       }
     } else if (coneDeploy = true) {
       switch(deployHeight) {
         case 0:
-        m_armSubsystem.setSetpoint(armConstants.kScoreLowConePos);
-        m_wristSubsystem.setGoal(wristConstants.kScoreLowConePos);
-        m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowConePos);
+        m_armSubsystem.setArmReferenceDEG(armConstants.kScoreLowConePos);
+        m_wristSubsystem.setWristReference(wristConstants.kScoreLowConePos);
+        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowConePos);
         m_deployStatus = kLow;
         break;
         case 1:
-        m_armSubsystem.setSetpoint(armConstants.kScoreMidConePos);
-        m_wristSubsystem.setGoal(wristConstants.kScoreMidConePos);
-        m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidConePos);
+        m_armSubsystem.setArmReferenceDEG(armConstants.kScoreMidConePos);
+        m_wristSubsystem.setWristReference(wristConstants.kScoreMidConePos);
+       //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidConePos);
         m_deployStatus = kMid;
         break;
         case 2:

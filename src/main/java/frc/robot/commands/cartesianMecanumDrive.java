@@ -8,7 +8,6 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -17,10 +16,9 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.driveConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
-import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
-public class CartesianMecanumDrive extends CommandBase  {
+public class cartesianMecanumDrive extends CommandBase  {
 
   private final DriveSubsystem m_driveSubsystem;
   private final DoubleSupplier speedX, speedY, driverHeadingAdjustment;
@@ -53,7 +51,7 @@ public class CartesianMecanumDrive extends CommandBase  {
   private Translation2d m_COR;
 
   /** Creates a new cartesianMecanumDrive. */
-  public CartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_Sensors, DoubleSupplier speedX,
+  public cartesianMecanumDrive(DriveSubsystem m_driveSubsystem, Sensors m_Sensors, DoubleSupplier speedX,
       DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.m_sensors = m_Sensors;

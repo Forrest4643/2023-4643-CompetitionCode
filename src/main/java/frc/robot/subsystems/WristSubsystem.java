@@ -6,82 +6,80 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.wristConstants;
 import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Config;
 
-public class WristSubsystem extends ProfiledPIDSubsystem implements Loggable {
-
-  private static double m_kS = 0;
-  private static double m_kG = 0;
-  private static double m_kV = 3.63;
-  private static double m_kA = 0.07;
+public class WristSubsystem extends SubsystemBase implements Loggable {
 
   private static double m_kP = 0;
   private static double m_kI = 0;
   private static double m_kD = 0;
 
-  private Sensors m_sensors;
+  private static double allowedErrorDEG = 1;
 
-  public final CANSparkMax m_wristMotor = new CANSparkMax(wristConstants.kWristID, MotorType.kBrushless);
+  private double m_wristReferencePointDEG = 0;
 
-  public final SparkMaxAbsoluteEncoder m_wristEncoder = m_wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
 
-  public ArmFeedforward m_wristFF = new ArmFeedforward(m_kS, m_kG, m_kV, m_kA);
+  private final CANSparkMax m_wristMotor = new CANSparkMax(wristConstants.kWristID, MotorType.kBrushless);
+
+  private final SparkMaxAbsoluteEncoder m_wristEncoder = m_wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
+
+  private final SparkMaxPIDController m_wristController = m_wristMotor.getPIDController();
 
   /** Creates a new wristSubsystem. */
-  public WristSubsystem(Sensors m_Sensors) {
-    super(
-        // The ProfiledPIDController used by the subsystem
-        new ProfiledPIDController(
-            m_kP,
-            m_kI,
-            m_kD,
-            // The motion profile constraints
-            new TrapezoidProfile.Constraints(wristConstants.kMaxVelocityMeters, wristConstants.kMaxAccelMeter)));
+  public WristSubsystem() {
 
-            this.m_sensors = m_Sensors;
-            m_wristEncoder.setPositionConversionFactor(360);
-            m_wristEncoder.setZeroOffset(60);
+    m_wristEncoder.setPositionConversionFactor(360);
 
-            getController().setGoal(-80);
+    m_wristEncoder.setZeroOffset(0); //TODO Calibrate wrist zero offset
+
+    m_wristMotor.setSoftLimit(SoftLimitDirection.kForward, 90);
+    
+    m_wristMotor.setSoftLimit(SoftLimitDirection.kReverse, -90);
+
+    m_wristController.setFeedbackDevice(m_wristEncoder);
+
+    m_wristController.setP(m_kP);
+    m_wristController.setI(m_kI);
+    m_wristController.setD(m_kD);
+
+    m_wristMotor.burnFlash();
+
   }
 
   @Override
   public void periodic() {
-    super.periodic();
     SmartDashboard.putNumber("wristPosition:", m_wristEncoder.getPosition());
-  }
-
-  @Override
-  public void useOutput(double output, TrapezoidProfile.State setpoint) {
-    m_wristMotor.setVoltage(output + m_wristFF.calculate(setpoint.position, setpoint.velocity));
+    SmartDashboard.putBoolean("wristAtSetpoint?", atSetpoint());
+    SmartDashboard.putNumber("wristSetpoint", m_wristReferencePointDEG);
   }
 
   public boolean atSetpoint() {
-    return getController().atSetpoint();
+    return Math.abs(m_wristEncoder.getPosition() - m_wristReferencePointDEG) < allowedErrorDEG;
   }
 
-  @Override
-  public double getMeasurement() {
-    // Return the process variable measurement here
-    return Units.degreesToRadians(m_wristEncoder.getPosition());
+  public void setWristReference(double referenceDEG) {
+    m_wristReferencePointDEG = referenceDEG;
+    m_wristController.setReference(m_wristReferencePointDEG, ControlType.kSmartMotion);
   }
-  
+ 
   public void unStow() {
-    getController().setGoal(80);
+    setWristReference(80);
   }
 
   public void matchStow() {
-    getController().setGoal(80);
+    setWristReference(80);
+  }
+
+  public void setHorizontal() {
+    setWristReference(0);
   }
 }

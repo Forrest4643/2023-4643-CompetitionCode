@@ -8,51 +8,29 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.List;
 
-import edu.wpi.first.hal.simulation.SimulatorJNI;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.RamseteController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
-import edu.wpi.first.util.concurrent.Event;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
-import io.github.oblarg.oblog.annotations.Log;
-import io.github.oblarg.oblog.annotations.Log.Logs;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.driveConstants;
-import frc.robot.commands.CartesianMecanumDrive;
+import frc.robot.commands.cartesianMecanumDrive;
 import frc.robot.commands.deployControl;
 import frc.robot.subsystems.*;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -65,26 +43,26 @@ public class RobotContainer implements Loggable{
   private Trigger armDeadSwitch;
 
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
-  private ArmSubsystem m_armSubsystem = new ArmSubsystem(m_sensors);
-  private WristSubsystem m_wristSubsystem = new WristSubsystem(m_sensors);
+  private ArmSubsystem m_armSubsystem = new ArmSubsystem();
+  private WristSubsystem m_wristSubsystem = new WristSubsystem();
   private TelescopingSubsystem m_telescopingSubsystem = new TelescopingSubsystem();
 
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
 
-  private Command m_manipControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
+  private Command m_deployControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
 
-  public CartesianMecanumDrive m_cartesianMecanumDrive = new CartesianMecanumDrive(m_driveSubsystem, m_sensors,
+  public cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
       () -> m_driveController.getRawAxis(XboxController.Axis.kLeftY.value), 
         () -> -m_driveController.getRawAxis(XboxController.Axis.kRightX.value));
   
   public Command unStow() {
-      return new InstantCommand(m_armSubsystem::enable).andThen((m_armSubsystem::unStow1)).until(
-          m_armSubsystem::atSetpoint).andThen(m_wristSubsystem::enable).andThen(
-            m_wristSubsystem::unStow).until(
+      return new InstantCommand(m_armSubsystem::unStow1, m_armSubsystem).until(
+          m_armSubsystem::atSetpoint).andThen(
+            m_wristSubsystem::unStow, m_wristSubsystem).until(
               m_wristSubsystem::atSetpoint).andThen(
-                m_armSubsystem::unStow2);
+                m_armSubsystem::unStow2, m_armSubsystem);
   }
 
   public RobotContainer() {
@@ -124,8 +102,8 @@ public class RobotContainer implements Loggable{
     
     armDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
 
-    armDeadSwitch.whileTrue(new InstantCommand(m_armSubsystem::enable).alongWith(new InstantCommand(m_armSubsystem::armHorizontal)))
-    .whileFalse(new InstantCommand(m_armSubsystem::enable).alongWith(new InstantCommand(m_armSubsystem::armHorizontal)));
+    armDeadSwitch.whileTrue(m_deployControl);
+    
   }
 
   public Command getAutonomousCommand() {

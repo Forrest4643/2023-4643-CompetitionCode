@@ -4,39 +4,45 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Config;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class TelescopingSubsystem extends ProfiledPIDSubsystem implements Loggable{
+public class TelescopingSubsystem extends SubsystemBase{
   private static double m_kP = 0;
 
   private static double m_kI = 0;
 
   private static double m_kD = 0;
 
+  private final CANSparkMax m_telescopingMotor = new CANSparkMax(6, MotorType.kBrushless);
+
+  private final RelativeEncoder m_telescopingEncoder = m_telescopingMotor.getEncoder();
+
+  private final SparkMaxPIDController m_telescopingController = m_telescopingMotor.getPIDController();
+
   /** Creates a new TelescopingSubsystem. */
   public TelescopingSubsystem() {
-    super(
-        // The ProfiledPIDController used by the subsystem
-        new ProfiledPIDController(
-            0,
-            0,
-            0,
-            // The motion profile constraints
-            new TrapezoidProfile.Constraints(0, 0)));
+   m_telescopingEncoder.setPositionConversionFactor(1); //TODO pos conversion factor
+
+   m_telescopingController.setP(m_kP);
+   m_telescopingController.setI(m_kI);
+   m_telescopingController.setD(m_kD);
+
+   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kForward, 0); //TODO set soft limits
+   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
+
+   m_telescopingMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+   m_telescopingMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+   m_telescopingMotor.burnFlash();
   }
 
   @Override
-  public void useOutput(double output, TrapezoidProfile.State setpoint) {
-    // Use the output (and optionally the setpoint) here
-  }
-
-  @Override
-  public double getMeasurement() {
-    // Return the process variable measurement here
-    return 0;
+  public void periodic() {
+    SmartDashboard.putNumber("telescopingEncoderPosition", m_telescopingEncoder.getPosition());
   }
 }

@@ -23,39 +23,41 @@ public class ArmSubsystem extends SubsystemBase {
 
   private final SparkMaxPIDController m_armController = m_armMotor.getPIDController();
 
-  private static double m_kP = 0; //TODO tune arm PID
+  private static double m_kP = 0.003; //TODO tune arm PID
 
-  private static double m_kI = 0;
+  private static double m_kI = 0.001;
  
   private static double m_kD = 0;
 
-  private static double allowedErrorDEG = 1;
+  private static double m_kF = 0.01;
+
+  private static double allowedErrorDEG = 3;
 
   private double m_armReferencePointDEG;
 
   /** Creates a new ArmSubsystem. */
   public ArmSubsystem() {
    
-  m_armEncoder.setPositionConversionFactor(123.75); //TODO is this right?
-  m_armEncoder.setZeroOffset(118.0008674);
+  //m_armEncoder.setPositionConversionFactor(123.75); //TODO is this right?
+  //m_armEncoder.setZeroOffset(118.0008674);
   m_armEncoder.setInverted(false);
 
   m_armMotor.setInverted(false);
-
-  m_armMotor.getEncoder().setPositionConversionFactor(1.93359375);
-  m_armMotor.getEncoder().setPosition(armEncoderPosition() - 40);
-
-  
 
   m_armController.setFeedbackDevice(m_armEncoder);
   m_armController.setP(m_kP);
   m_armController.setI(m_kI);
   m_armController.setD(m_kD);
+  m_armController.setFF(m_kF);
 
-  m_armMotor.setSoftLimit(SoftLimitDirection.kForward, -35);
-  m_armMotor.setSoftLimit((SoftLimitDirection.kReverse), 80);
-  m_armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
-  m_armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+  m_armController.setSmartMotionMaxAccel(150, 0);
+  m_armController.setSmartMotionMaxVelocity(60, 0);
+  m_armController.setSmartMotionAllowedClosedLoopError(allowedErrorDEG, 0);
+
+  m_armController.setIZone(3, 0);
+
+  m_armMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
+  m_armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
   m_armMotor.burnFlash();
 
   }
@@ -76,22 +78,30 @@ public class ArmSubsystem extends SubsystemBase {
   public void setArmReferenceDEG(double referenceDEG) {
     m_armReferencePointDEG = referenceDEG;
     m_armController.setReference(m_armReferencePointDEG, ControlType.kSmartMotion);
+    System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
+    //System.out.println("Arm Reported Position:" + m_armEncoder.getPosition());
+
   }
 
   public void unStow1() {
-    m_armReferencePointDEG = 36;
+    m_armReferencePointDEG = 45;
+    System.out.println("unStow1!");
   }
 
   public void unStow2() {
-    m_armReferencePointDEG = 80;
+    m_armReferencePointDEG = 0;
+    System.out.println("unStow2!");
+
   }
 
   public void matchStow() {
-    m_armReferencePointDEG = 80;
+    m_armReferencePointDEG = 0;
+    System.out.println("matchStow!");
   }
 
   public void armHorizontal() {
-    m_armReferencePointDEG = 0;
+    m_armReferencePointDEG = 70;
+    System.out.println("armHorizontal!");
   }
 
   public double armEncoderPosition() {

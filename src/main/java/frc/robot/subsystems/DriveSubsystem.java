@@ -95,7 +95,6 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
 
   public Pose2d navXPose2d = new Pose2d(-100, -100, null);
 
-
   private Field2d m_field = new Field2d();
 
   MecanumDriveWheelSpeeds m_driveMeterSeconds = new MecanumDriveWheelSpeeds();

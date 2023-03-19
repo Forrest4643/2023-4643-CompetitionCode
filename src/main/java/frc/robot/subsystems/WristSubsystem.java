@@ -19,7 +19,7 @@ import io.github.oblarg.oblog.Loggable;
 
 public class WristSubsystem extends SubsystemBase implements Loggable {
 
-  private static double m_kP = 0;
+  private static double m_kP = 0.005;
   private static double m_kI = 0;
   private static double m_kD = 0;
 
@@ -41,10 +41,6 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
     m_wristEncoder.setZeroOffset(0); //TODO Calibrate wrist zero offset
 
-    m_wristMotor.setSoftLimit(SoftLimitDirection.kForward, 90);
-    
-    m_wristMotor.setSoftLimit(SoftLimitDirection.kReverse, -90);
-
     m_wristController.setFeedbackDevice(m_wristEncoder);
 
     m_wristController.setP(m_kP);
@@ -52,7 +48,6 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
     m_wristController.setD(m_kD);
 
     m_wristMotor.burnFlash();
-
   }
 
   @Override
@@ -72,14 +67,14 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
   }
  
   public void unStow() {
-    setWristReference(80);
+    setWristReference(20);
   }
 
   public void matchStow() {
-    setWristReference(80);
+    setWristReference(20);
   }
 
   public void setHorizontal() {
-    setWristReference(0);
+    setWristReference(120);
   }
 }

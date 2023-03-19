@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import io.github.oblarg.oblog.Loggable;
 
 
@@ -64,18 +63,16 @@ public class Constants implements Loggable {
         public static final double kMaxVelocityDegSec = 90;
         public static final double kMaxAccelDegSec = 45;
 
-        public static final double kScoreLowCubePos = Units.degreesToRadians(0);
-        public static final double kScoreMidCubePos = Units.degreesToRadians(0);
-        public static final double kScoreHighCubePos = Units.degreesToRadians(0);
+        public static final double kScoreLowCubePos = 25;
+        public static final double kScoreMidCubePos = 50;
+        public static final double kScoreHighCubePos = 90;
 
-        public static final double kScoreLowConePos = Units.degreesToRadians(0);
-        public static final double kScoreMidConePos = Units.degreesToRadians(0);
+        public static final double kScoreLowConePos = 30;
+        public static final double kScoreMidConePos = 50;
      
         public static final double kStowPos = 0;
 
-        public static final double kSubstationPos = 0;
-
-        public static final String unStow1Deg = null;
+        public static final double kSubstationPos = 60;
 
     }
 
@@ -100,16 +97,14 @@ public class Constants implements Loggable {
         public static final double kMaxVelocityMeters = 0;
         public static final double kMaxAccelMeter = 0;
 
-        public static final double kScoreLowCubePos = 0;
-        public static final double kScoreMidCubePos = 0;
-        public static final double kScoreHighCubePos = 0;
+        public static final double kScoreLowCubePos = 90;
+        public static final double kScoreMidCubePos = 100;
+        public static final double kScoreHighCubePos = 70;
 
-        public static final double kScoreLowConePos = 0;
-        public static final double kScoreMidConePos = 0;
+        public static final double kScoreLowConePos = 60;
+        public static final double kScoreMidConePos = 120;
 
-        public static final double kStowPos = 0;
-
-        public static final double kSubstationPos = 0;
+        public static final double kSubstationPos = 120;
 
     }
 

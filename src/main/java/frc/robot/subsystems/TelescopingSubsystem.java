@@ -27,13 +27,15 @@ public class TelescopingSubsystem extends SubsystemBase{
 
   /** Creates a new TelescopingSubsystem. */
   public TelescopingSubsystem() {
-   m_telescopingEncoder.setPositionConversionFactor(1); //TODO pos conversion factor
+   m_telescopingEncoder.setPositionConversionFactor(0.001778); //TODO pos conversion factor
 
    m_telescopingController.setP(m_kP);
    m_telescopingController.setI(m_kI);
    m_telescopingController.setD(m_kD);
 
-   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kForward, 0); //TODO set soft limits
+   m_telescopingMotor.setInverted(false);
+
+   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kForward, (float) 12.5); //TODO set soft limits
    m_telescopingMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
 
    m_telescopingMotor.enableSoftLimit(SoftLimitDirection.kForward, true);

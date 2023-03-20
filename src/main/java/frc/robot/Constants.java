@@ -106,10 +106,20 @@ public class Constants implements Loggable {
 
         public static final double kSubstationPos = 120;
 
+        public static final double kWristMinPositionDEG = 0;
+        public static final double kWristMaxPositionDEG = 240;
+
+        public static final double kWristSensitivity = 1;
+
+
     }
 
     public static final class mandibleConstants {
         public static final int kMandibleID = 8;
+
+        public static final double kHoldVoltage = 3;
+
+        public static final double kCurrentThresh = 10;
     }
  
     public static final class visionConstants {

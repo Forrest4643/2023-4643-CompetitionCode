@@ -8,12 +8,12 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.mandibleConstants;
 import frc.robot.Constants.wristConstants;
 import io.github.oblarg.oblog.Loggable;
 
@@ -55,6 +55,10 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
     SmartDashboard.putNumber("wristPosition:", m_wristEncoder.getPosition());
     SmartDashboard.putBoolean("wristAtSetpoint?", atSetpoint());
     SmartDashboard.putNumber("wristSetpoint", m_wristReferencePointDEG);
+  }
+
+  public double getWristPosition() {
+    return m_wristEncoder.getPosition();
   }
 
   public boolean atSetpoint() {

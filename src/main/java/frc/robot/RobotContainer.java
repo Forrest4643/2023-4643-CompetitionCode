@@ -24,11 +24,12 @@ import io.github.oblarg.oblog.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
-
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.driveConstants;
 import frc.robot.commands.cartesianMecanumDrive;
 import frc.robot.commands.deployControl;
+import frc.robot.commands.intakeControl;
 import frc.robot.subsystems.*;
 
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -40,17 +41,20 @@ public class RobotContainer implements Loggable{
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
 
-  private Trigger armDeadSwitch;
+  private Trigger armDeadSwitch, intakeDeadSwitch;
 
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private ArmSubsystem m_armSubsystem = new ArmSubsystem();
   private WristSubsystem m_wristSubsystem = new WristSubsystem();
   private TelescopingSubsystem m_telescopingSubsystem = new TelescopingSubsystem();
+  private mandibleSubsystem m_mandibleSubsystem = new mandibleSubsystem();
 
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
 
   private Command m_deployControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
+
+  private Command m_intakeControl = new intakeControl(m_wristSubsystem, m_armSubsystem, m_telescopingSubsystem, m_mandibleSubsystem, () -> m_operateController.getRawAxis(XboxController.Axis.kLeftY.value));
 
   public cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
@@ -101,9 +105,18 @@ public class RobotContainer implements Loggable{
 
     
     armDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
+    intakeDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > 0.5);
 
     armDeadSwitch.whileTrue(m_deployControl);
-    
+
+    intakeDeadSwitch.whileTrue(m_intakeControl);
+
+    new JoystickButton(m_operateController, XboxController.Button.kRightBumper.value).and(armDeadSwitch)
+      .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootFull)));
+
+    new JoystickButton(m_operateController, XboxController.Button.kLeftBumper.value).and(armDeadSwitch)
+      .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootHalf)));
+
   }
 
   public Command getAutonomousCommand() {

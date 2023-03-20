@@ -13,12 +13,11 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.mandibleConstants;
 import frc.robot.Constants.wristConstants;
 import io.github.oblarg.oblog.Loggable;
 
 public class WristSubsystem extends SubsystemBase implements Loggable {
-
+ 
   private static double m_kP = 0.005;
   private static double m_kI = 0;
   private static double m_kD = 0;

@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,5 +47,9 @@ public class TelescopingSubsystem extends SubsystemBase{
   @Override
   public void periodic() {
     SmartDashboard.putNumber("telescopingEncoderPosition", m_telescopingEncoder.getPosition());
+  }
+
+  public void setTelescopingReference(double referenceDEG) {
+    m_telescopingController.setReference(referenceDEG, ControlType.kPosition);
   }
 }

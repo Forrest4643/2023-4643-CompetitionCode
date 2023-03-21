@@ -99,7 +99,7 @@ public class Constants implements Loggable {
 
         public static final double kScoreLowCubePos = 90;
         public static final double kScoreMidCubePos = 100;
-        public static final double kScoreHighCubePos = 70;
+        public static final double kScoreHighCubePos = 150;
 
         public static final double kScoreLowConePos = 60;
         public static final double kScoreMidConePos = 120;
@@ -109,7 +109,7 @@ public class Constants implements Loggable {
         public static final double kWristMinPositionDEG = 0;
         public static final double kWristMaxPositionDEG = 240;
 
-        public static final double kWristSensitivity = 1;
+        public static final double kWristSensitivity = 2;
 
 
     }

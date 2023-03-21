@@ -70,11 +70,11 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
   }
  
   public void unStow() {
-    setWristReference(20);
+    setWristReference(200);
   }
 
   public void matchStow() {
-    setWristReference(20);
+    setWristReference(200);
   }
 
   public void setHorizontal() {

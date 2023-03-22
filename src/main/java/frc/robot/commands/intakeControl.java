@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.driveConstants;
 import frc.robot.Constants.wristConstants;
@@ -47,7 +48,7 @@ public class intakeControl extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_wristSubsystem.matchStow();
+    m_expectedWristPosition = 120;
     
     m_mandibleSubsystem.intakeFull();
   }
@@ -55,7 +56,7 @@ public class intakeControl extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double owa = m_wristAdjust.getAsDouble();
+    double owa = -m_wristAdjust.getAsDouble();
     double owaOUT;
     // maintaining minus sign
     if (owa < 0) {
@@ -78,6 +79,8 @@ public class intakeControl extends CommandBase {
     m_expectedWristPosition = MathUtil.clamp(m_expectedWristPosition + (owaOUT * wristConstants.kWristSensitivity), 
     wristConstants.kWristMinPositionDEG, wristConstants.kWristMaxPositionDEG);
 
+    SmartDashboard.putNumber("expectedWristPosition", m_expectedWristPosition);
+    
     m_wristSubsystem.setWristReference(m_expectedWristPosition);
 
   }

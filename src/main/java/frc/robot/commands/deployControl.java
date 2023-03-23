@@ -8,6 +8,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.armConstants;
+import frc.robot.Constants.telescopingConstant;
 import frc.robot.Constants.wristConstants;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.TelescopingSubsystem;
@@ -96,8 +97,6 @@ public class deployControl extends CommandBase implements Loggable{
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_armSubsystem.matchStow();
-    m_wristSubsystem.matchStow();
   }
 
   // Returns true when the command should end.
@@ -112,19 +111,19 @@ public class deployControl extends CommandBase implements Loggable{
         case 0:
         m_armSubsystem.setArmReferenceDEG(armConstants.kScoreLowCubePos);
         m_wristSubsystem.setWristReference(wristConstants.kScoreLowCubePos);
-        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowCubePos);
+        m_telescopingSubsystem.setTelescopingReference(telescopingConstant.kScoreLowCubePos);
         m_deployStatus = kLow;
         break;
         case 1:
         m_armSubsystem.setArmReferenceDEG(armConstants.kScoreMidCubePos);        
         m_wristSubsystem.setWristReference(wristConstants.kScoreMidCubePos);
-        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidCubePos);
+        m_telescopingSubsystem.setTelescopingReference(telescopingConstant.kScoreMidCubePos);
         m_deployStatus = kMid;
         break;
         case 2:
         m_armSubsystem.setArmReferenceDEG(armConstants.kScoreHighCubePos);        
         m_wristSubsystem.setWristReference(wristConstants.kScoreHighCubePos);
-        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreHighCubePos);
+        m_telescopingSubsystem.setTelescopingReference(telescopingConstant.kScoreHighCubePos);
         m_deployStatus = kHigh;
         break;
       }
@@ -133,13 +132,13 @@ public class deployControl extends CommandBase implements Loggable{
         case 0:
         m_armSubsystem.setArmReferenceDEG(armConstants.kScoreLowConePos);
         m_wristSubsystem.setWristReference(wristConstants.kScoreLowConePos);
-        //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreLowConePos);
+        m_telescopingSubsystem.setTelescopingReference(telescopingConstant.kScoreLowConePos);
         m_deployStatus = kLow;
         break;
         case 1:
         m_armSubsystem.setArmReferenceDEG(armConstants.kScoreMidConePos);
         m_wristSubsystem.setWristReference(wristConstants.kScoreMidConePos);
-       //m_telescopingSubsystem.setGoal(telescopingConstant.kScoreMidConePos);
+        m_telescopingSubsystem.setTelescopingReference(telescopingConstant.kScoreMidConePos);
         m_deployStatus = kMid;
         break;
         case 2:

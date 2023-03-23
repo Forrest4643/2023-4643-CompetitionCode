@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class TelescopingSubsystem extends SubsystemBase{
-  private static double m_kP = 0;
+  private static double m_kP = 1.5;
 
   private static double m_kI = 0;
 
@@ -28,7 +28,7 @@ public class TelescopingSubsystem extends SubsystemBase{
 
   /** Creates a new TelescopingSubsystem. */
   public TelescopingSubsystem() {
-   m_telescopingEncoder.setPositionConversionFactor(0.001778); //TODO pos conversion factor
+   m_telescopingEncoder.setPositionConversionFactor(0.0567); //TODO pos conversion factor
 
    m_telescopingController.setP(m_kP);
    m_telescopingController.setI(m_kI);
@@ -51,5 +51,9 @@ public class TelescopingSubsystem extends SubsystemBase{
 
   public void setTelescopingReference(double referenceDEG) {
     m_telescopingController.setReference(referenceDEG, ControlType.kPosition);
+  }
+
+  public void matchStow() {
+    setTelescopingReference(0);
   }
 }

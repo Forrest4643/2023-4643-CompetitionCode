@@ -61,13 +61,13 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   private SparkMaxPIDController m_rearRightPIDFF = rearRightSparkMax.getPIDController();
   private SparkMaxPIDController m_frontRightPIDFF = frontRightSparkMax.getPIDController();
 
-  public double sparkMAXVelocitykP = 0.00015;
+  public double sparkMAXVelocitykP = 0.0002;
 
   public double sparkMAXVelocitykI = 0;
 
   public double sparkMAXVelocitykD = 0.0;
 
-  public double sparkMAXVelocitykF = 0.001;
+  public double sparkMAXVelocitykF = 0.002;
 
 
   /*

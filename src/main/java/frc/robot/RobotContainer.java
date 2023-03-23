@@ -8,6 +8,7 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 
 import edu.wpi.first.math.geometry.Translation2d;
@@ -107,7 +108,8 @@ public class RobotContainer implements Loggable{
     armDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
     intakeDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > 0.5);
 
-    armDeadSwitch.whileTrue(m_deployControl);
+    armDeadSwitch.whileTrue(m_deployControl).onFalse(
+      new InstantCommand(m_armSubsystem::matchStow));
 
     intakeDeadSwitch.whileTrue(m_intakeControl);
 
@@ -116,6 +118,10 @@ public class RobotContainer implements Loggable{
 
     new JoystickButton(m_operateController, XboxController.Button.kLeftBumper.value).and(armDeadSwitch)
       .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootHalf)));
+
+    // armDeadSwitch.and(intakeDeadSwitch).whileFalse(
+    //   new RepeatCommand(new InstantCommand(m_armSubsystem::matchStow).alongWith(
+    //     new RepeatCommand(new InstantCommand(m_wristSubsystem::matchStow)))));
 
   }
 

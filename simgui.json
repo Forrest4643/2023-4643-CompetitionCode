@@ -111,6 +111,9 @@
         "WristSubsystem": {
           "open": true
         },
+        "deployControl": {
+          "open": true
+        },
         "open": true
       },
       "SmartDashboard": {

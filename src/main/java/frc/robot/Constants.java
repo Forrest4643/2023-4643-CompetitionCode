@@ -33,7 +33,6 @@ public class Constants implements Loggable {
 
         public static final MecanumDriveKinematics kDriveKinematics = new MecanumDriveKinematics(kFrontLeftWheelMeters, kFrontRightWheelMeters, kRearLeftWheelMeters, kRearRightWheelMeters); 
 
-
         public static final int kDriveSparkSmartCurrentLimit = 35; //Amps
         
         public static final double steerkP = 0.085;
@@ -74,6 +73,8 @@ public class Constants implements Loggable {
 
         public static final double kSubstationPos = 60;
 
+        public static final double kG = 0;
+
     }
 
     public static final class telescopingConstant {
@@ -89,6 +90,10 @@ public class Constants implements Loggable {
         public static final double kStowPos = 0;
 
         public static final double kSubstationPos = 0;
+
+        public static final double kMaxPositionIN = 12.5;
+        public static final double kMinPositionIN = 0;
+
 
     }
 
@@ -106,11 +111,10 @@ public class Constants implements Loggable {
 
         public static final double kSubstationPos = 120;
 
-        public static final double kWristMinPositionDEG = 0;
-        public static final double kWristMaxPositionDEG = 240;
+        public static final double kWristMinPositionDEG = -120;
+        public static final double kWristMaxPositionDEG = 120;
 
         public static final double kWristSensitivity = 2;
-
 
     }
 
@@ -124,8 +128,8 @@ public class Constants implements Loggable {
  
     public static final class visionConstants {
         public static final Transform3d kRobotToFrontCamMeters = new  Transform3d(
-            new Translation3d(-0.052878, -0.177 , 0.763443), 
-            new Rotation3d(0, -10, 0));
+            new Translation3d(0.052878, 0.177 , 0.763443), 
+            new Rotation3d(-10, 0, 0));
     }
 
     public static class autoConstants implements Loggable {

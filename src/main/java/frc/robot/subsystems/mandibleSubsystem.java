@@ -49,5 +49,9 @@ public class mandibleSubsystem extends SubsystemBase {
     return m_mandibleMotor.getOutputCurrent();
   }
 
+  public boolean intakeAtSpeed() {
+    return m_mandibleMotor.getEncoder().getVelocity() > 2000;
+  }
+
 
 }

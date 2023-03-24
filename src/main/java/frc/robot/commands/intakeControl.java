@@ -47,9 +47,7 @@ public class intakeControl extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    m_expectedWristPosition = 120;
-    
+  public void initialize() {    
     m_mandibleSubsystem.intakeFull();
   }
 
@@ -71,7 +69,7 @@ public class intakeControl extends CommandBase {
           driveConstants.kInputDeadband);
     }
 
-    if(m_mandibleSubsystem.intakeCurrentSpike()) {
+    if(m_mandibleSubsystem.intakeCurrentSpike() && m_mandibleSubsystem.intakeAtSpeed()) {
       m_mandibleSubsystem.intakeHold();
     }
 

@@ -164,6 +164,11 @@ public class cartesianMecanumDrive extends CommandBase  {
 
   }
 
+  public void zeroHeading() {
+    m_sensors.zeroNavXHeading();
+    m_expectedHeading = 0;
+  }
+
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {

@@ -42,12 +42,12 @@ public class RobotContainer implements Loggable{
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
 
-  private Trigger armDeadSwitch, intakeDeadSwitch;
+  private Trigger deployDeadswitch, intakeDeadSwitch;
 
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
-  private ArmSubsystem m_armSubsystem = new ArmSubsystem();
-  private WristSubsystem m_wristSubsystem = new WristSubsystem();
   private TelescopingSubsystem m_telescopingSubsystem = new TelescopingSubsystem();
+  private ArmSubsystem m_armSubsystem = new ArmSubsystem(m_telescopingSubsystem);
+  private WristSubsystem m_wristSubsystem = new WristSubsystem(m_armSubsystem);
   private mandibleSubsystem m_mandibleSubsystem = new mandibleSubsystem();
 
   private XboxController m_driveController = new XboxController(0);
@@ -104,24 +104,23 @@ public class RobotContainer implements Loggable{
     new JoystickButton(m_driveController, XboxController.Button.kLeftStick.value)
       .onTrue(new InstantCommand(m_cartesianMecanumDrive::centeredRotation)); //Centered rotation on left stick press
 
+    new JoystickButton(m_driveController, XboxController.Button.kRightStick.value)
+      .onTrue(new InstantCommand(m_cartesianMecanumDrive::zeroHeading));
     
-    armDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
+    deployDeadswitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
     intakeDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > 0.5);
 
-    armDeadSwitch.whileTrue(m_deployControl).onFalse(
-      new InstantCommand(m_armSubsystem::matchStow));
+    deployDeadswitch.whileTrue(m_deployControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow)
+    .until(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::matchStow));
 
-    intakeDeadSwitch.whileTrue(m_intakeControl);
+    intakeDeadSwitch.whileTrue(m_intakeControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow)
+      .until(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::matchStow));
 
-    new JoystickButton(m_operateController, XboxController.Button.kRightBumper.value).and(armDeadSwitch)
+    new JoystickButton(m_operateController, XboxController.Button.kRightBumper.value).and(deployDeadswitch)
       .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootFull)));
 
-    new JoystickButton(m_operateController, XboxController.Button.kLeftBumper.value).and(armDeadSwitch)
+    new JoystickButton(m_operateController, XboxController.Button.kLeftBumper.value).and(deployDeadswitch)
       .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootHalf)));
-
-    // armDeadSwitch.and(intakeDeadSwitch).whileFalse(
-    //   new RepeatCommand(new InstantCommand(m_armSubsystem::matchStow).alongWith(
-    //     new RepeatCommand(new InstantCommand(m_wristSubsystem::matchStow)))));
 
   }
 

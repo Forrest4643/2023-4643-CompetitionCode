@@ -11,20 +11,27 @@ import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.wristConstants;
 import io.github.oblarg.oblog.Loggable;
 
 public class WristSubsystem extends SubsystemBase implements Loggable {
+
+  private ArmSubsystem m_armSubsystem;
  
   private static double m_kP = 0.008;
   private static double m_kI = 0.00008;
   private static double m_kD = 0.01;
 
+  private static double m_wristOffsetDEG = -120;
+
   private static double allowedErrorDEG = 1;
 
   private double m_wristReferencePointDEG = 0;
+
+
 
 
   private final CANSparkMax m_wristMotor = new CANSparkMax(wristConstants.kWristID, MotorType.kBrushless);
@@ -33,8 +40,12 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   private final SparkMaxPIDController m_wristController = m_wristMotor.getPIDController();
 
+  private ArmFeedforward m_wristFF = new ArmFeedforward(0, 0.5, 0);
+
   /** Creates a new wristSubsystem. */
-  public WristSubsystem() {
+  public WristSubsystem(ArmSubsystem m_ArmSubsystem) {
+
+    this.m_armSubsystem = m_ArmSubsystem;
 
     m_wristEncoder.setPositionConversionFactor(360);
 
@@ -68,18 +79,19 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
-    m_wristController.setReference(m_wristReferencePointDEG, ControlType.kSmartMotion);
+    m_wristController.setReference(m_wristReferencePointDEG + m_wristOffsetDEG, ControlType.kSmartMotion,
+     0, m_wristFF.calculate(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition(), 0));
   }
  
   public void unStow() {
-    setWristReference(200);
+    setWristReference(60);
   }
 
   public void matchStow() {
-    setWristReference(200);
+    setWristReference(60);
   }
 
   public void setHorizontal() {
-    setWristReference(120);
+    setWristReference(0);
   }
 }

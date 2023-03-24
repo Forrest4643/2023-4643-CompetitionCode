@@ -12,6 +12,7 @@ import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.telescopingConstant;
 
 public class TelescopingSubsystem extends SubsystemBase{
   private static double m_kP = 1.5;
@@ -36,8 +37,8 @@ public class TelescopingSubsystem extends SubsystemBase{
 
    m_telescopingMotor.setInverted(false);
 
-   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kForward, (float) 12.5); //TODO set soft limits
-   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
+   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kForward, (float) telescopingConstant.kMaxPositionIN); //TODO set soft limits
+   m_telescopingMotor.setSoftLimit(SoftLimitDirection.kReverse, (float) telescopingConstant.kMinPositionIN);
 
    m_telescopingMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
    m_telescopingMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
@@ -47,6 +48,10 @@ public class TelescopingSubsystem extends SubsystemBase{
   @Override
   public void periodic() {
     SmartDashboard.putNumber("telescopingEncoderPosition", m_telescopingEncoder.getPosition());
+  }
+
+  public double telescopingPosIN() {
+    return m_telescopingEncoder.getPosition();
   }
 
   public void setTelescopingReference(double referenceDEG) {

@@ -38,18 +38,18 @@ public class ArmSubsystem extends SubsystemBase {
 
   private ArmFeedforward m_armFeedforward; 
 
-  private static double m_kP = 0.013; //TODO tune arm PID
+  private static double m_kP = 0.005; //TODO tune arm PID
 
   private static double m_kI = 0.0;
  
-  private static double m_kD = 0.0001;
+  private static double m_kD = 0.0005;
 
   private static double m_kF = 0.0;
 
   private double m_kG;
 
-  private static final double m_kGmin = 0.8;
-  private static final double m_kGmax = 1.04;
+  private static final double m_kGmin = 0.9;
+  private static final double m_kGmax = 1.2;
 
   private double m_kGmultiplier = m_kGmax / m_kGmin; //retracted kG over extended kG
 
@@ -87,7 +87,7 @@ public class ArmSubsystem extends SubsystemBase {
   m_armController.setFF(m_kF);
 
   m_armController.setSmartMotionMaxAccel(400, 0);
-  m_armController.setSmartMotionMaxVelocity(40, 0);
+  m_armController.setSmartMotionMaxVelocity(100, 0);
   m_armController.setSmartMotionAllowedClosedLoopError(2, 0);
 
   m_armController.setIZone(3, 0);

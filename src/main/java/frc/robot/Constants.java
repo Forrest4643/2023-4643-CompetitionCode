@@ -123,7 +123,7 @@ public class Constants implements Loggable {
 
         public static final double kHoldVoltage = 0.5;
 
-        public static final double kCurrentThresh = 15;
+        public static final double kCurrentThresh = 10;
     }
  
     public static final class visionConstants {

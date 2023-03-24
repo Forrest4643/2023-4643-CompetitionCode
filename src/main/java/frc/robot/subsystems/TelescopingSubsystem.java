@@ -61,4 +61,8 @@ public class TelescopingSubsystem extends SubsystemBase{
   public void matchStow() {
     setTelescopingReference(0);
   }
+
+  public void intakePosition() {
+    setTelescopingReference(6);
+  }
 }

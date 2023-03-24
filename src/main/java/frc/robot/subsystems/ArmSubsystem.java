@@ -142,20 +142,26 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void unStow2() {
-    setArmReferenceDEG(-50);
+    setArmReferenceDEG(-80);
     System.out.println("unStow2!");
 
   }
 
   public void matchStow() {
-  setArmReferenceDEG(-50);
+  setArmReferenceDEG(-80);
   System.out.println("matchStow!");
+  }
+
+  public void intakePosition() {
+    setArmReferenceDEG(-40);
   }
 
   public void armHorizontal() {
     setArmReferenceDEG(0);;
     System.out.println("armHorizontal!");
   }
+
+  
 
   public double armEncoderPosition() {
     return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);

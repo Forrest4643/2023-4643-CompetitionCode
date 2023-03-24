@@ -49,6 +49,9 @@ public class intakeControl extends CommandBase {
   @Override
   public void initialize() {    
     m_mandibleSubsystem.intakeFull();
+    m_armSubsystem.intakePosition();
+    m_wristSubsystem.matchStow();
+    m_telescopingSubsystem.intakePosition();
   }
 
   // Called every time the scheduler runs while the command is scheduled.

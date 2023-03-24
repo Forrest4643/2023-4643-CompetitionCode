@@ -110,10 +110,10 @@ public class RobotContainer implements Loggable{
     deployDeadswitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
     intakeDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > 0.5);
 
-    deployDeadswitch.whileTrue(m_deployControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow)
+    deployDeadswitch.whileTrue(m_deployControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow).alongWith(new InstantCommand(m_telescopingSubsystem::matchStow))
     .until(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::matchStow));
 
-    intakeDeadSwitch.whileTrue(m_intakeControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow)
+    intakeDeadSwitch.whileTrue(m_intakeControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow).alongWith(new InstantCommand(m_telescopingSubsystem::matchStow))
       .until(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::matchStow));
 
     new JoystickButton(m_operateController, XboxController.Button.kRightBumper.value).and(deployDeadswitch)

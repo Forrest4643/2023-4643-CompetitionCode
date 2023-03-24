@@ -21,9 +21,9 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   private ArmSubsystem m_armSubsystem;
  
-  private static double m_kP = 0.008;
-  private static double m_kI = 0.00008;
-  private static double m_kD = 0.01;
+  private static double m_kP = 0.0001;
+  private static double m_kI = 0.0;
+  private static double m_kD = 0.0;
 
   private static double m_wristOffsetDEG = -120;
 
@@ -64,22 +64,22 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("wristPosition:", m_wristEncoder.getPosition());
+    SmartDashboard.putNumber("wristPosition:", getWristPosition());
     SmartDashboard.putBoolean("wristAtSetpoint?", atSetpoint());
     SmartDashboard.putNumber("wristSetpoint", m_wristReferencePointDEG);
   }
 
   public double getWristPosition() {
-    return m_wristEncoder.getPosition();
+    return -m_wristEncoder.getPosition() - m_wristOffsetDEG;
   }
 
   public boolean atSetpoint() {
-    return Math.abs(m_wristEncoder.getPosition() - m_wristReferencePointDEG) < allowedErrorDEG;
+    return Math.abs(m_wristEncoder.getPosition() + m_wristReferencePointDEG) < allowedErrorDEG;
   }
 
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
-    m_wristController.setReference(m_wristReferencePointDEG + m_wristOffsetDEG, ControlType.kSmartMotion,
+    m_wristController.setReference(m_wristReferencePointDEG, ControlType.kSmartMotion,
      0, m_wristFF.calculate(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition(), 0));
   }
  

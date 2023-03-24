@@ -15,6 +15,7 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -37,22 +38,22 @@ public class ArmSubsystem extends SubsystemBase {
 
   private ArmFeedforward m_armFeedforward; 
 
-  private static double m_kP = 0.0055; //TODO tune arm PID
+  private static double m_kP = 0.013; //TODO tune arm PID
 
-  private static double m_kI = 0.000075;
+  private static double m_kI = 0.0;
  
-  private static double m_kD = 0.0;
+  private static double m_kD = 0.0001;
 
-  private static double m_kF = 0.01;
+  private static double m_kF = 0.0;
 
   private double m_kG;
 
-  private static final double m_kGmin = 0.65;
+  private static final double m_kGmin = 0.8;
   private static final double m_kGmax = 1.04;
 
   private double m_kGmultiplier = m_kGmax / m_kGmin; //retracted kG over extended kG
 
-  private static double m_armEncoderOffset = -115;
+  private static double m_armEncoderOffset = -80;
 
   private static double allowedErrorDEG = 3;
 
@@ -109,10 +110,16 @@ public class ArmSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("armSetpoint", m_armReferencePointDEG);
     SmartDashboard.putBoolean("armAtSetpoint?", atSetpoint());
 
-    m_kG = ((m_telescopingSubsystem.telescopingPosIN() / telescopingConstant.kMaxPositionIN)
+    
+    m_kG = ((MathUtil.clamp(m_telescopingSubsystem.telescopingPosIN(), 1, telescopingConstant.kMaxPositionIN)
+     / telescopingConstant.kMaxPositionIN)
      * m_kGmultiplier);
     
     m_armFeedforward = new ArmFeedforward(0, m_kG, 0);
+
+    SmartDashboard.putNumber("armArbFF output", m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0));
+
+    System.out.println("Arm Reported Position:" + m_armMotorEncoder.getPosition());
 
   }
 
@@ -122,15 +129,15 @@ public class ArmSubsystem extends SubsystemBase {
   
   public void setArmReferenceDEG(double referenceDEG) {
     m_armReferencePointDEG = referenceDEG;
-    m_armController.setReference(m_armReferencePointDEG, ControlType.kSmartMotion, 0, 
+    m_armController.setReference(m_armReferencePointDEG - m_armEncoderOffset, ControlType.kSmartMotion, 0, 
       m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0));
-    System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
-    System.out.println("Arm Reported Position:" + m_armMotorEncoder.getPosition());
+    //System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
+
 
   }
 
   public void unStow1() {
-    setArmReferenceDEG(-45);
+    setArmReferenceDEG(-20);
     System.out.println("unStow1!");
   }
 
@@ -151,6 +158,6 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public double armEncoderPosition() {
-    return (m_armMotorEncoder.getPosition() - m_armEncoderOffset);
+    return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
   }
 }

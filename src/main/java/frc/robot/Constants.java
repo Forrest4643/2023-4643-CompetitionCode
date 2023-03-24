@@ -23,7 +23,7 @@ public class Constants implements Loggable {
         public static final int kLeftFrontID = 1;
         public static final int kLeftRearID = 2;
         public static final int kRightFrontID = 4;
-        public static final int kRightRearID = 3;
+        public static final int kRightRearID = 3;   
         public static final double kInputDeadband = 0.08;
 
         private static final Translation2d kFrontLeftWheelMeters = new Translation2d(0.302578, 0.254000);
@@ -62,12 +62,12 @@ public class Constants implements Loggable {
         public static final double kMaxVelocityDegSec = 90;
         public static final double kMaxAccelDegSec = 45;
 
-        public static final double kScoreLowCubePos = 25;
-        public static final double kScoreMidCubePos = 50;
-        public static final double kScoreHighCubePos = 90;
+        public static final double kScoreLowCubePos = -45;
+        public static final double kScoreMidCubePos = -25;
+        public static final double kScoreHighCubePos = 0;
 
-        public static final double kScoreLowConePos = 30;
-        public static final double kScoreMidConePos = 50;
+        public static final double kScoreLowConePos = -45;
+        public static final double kScoreMidConePos = -20;
      
         public static final double kStowPos = 0;
 
@@ -81,11 +81,11 @@ public class Constants implements Loggable {
         public static final int kTeleID = 6;
 
         public static final double kScoreLowCubePos = 0;
-        public static final double kScoreMidCubePos = 0;
-        public static final double kScoreHighCubePos = 0;
+        public static final double kScoreMidCubePos = 6;
+        public static final double kScoreHighCubePos = 12.5;
 
         public static final double kScoreLowConePos = 0;
-        public static final double kScoreMidConePos = 0;
+        public static final double kScoreMidConePos = 6;
 
         public static final double kStowPos = 0;
 

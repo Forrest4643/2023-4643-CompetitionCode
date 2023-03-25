@@ -27,6 +27,8 @@ public class TelescopingSubsystem extends SubsystemBase{
 
   private final SparkMaxPIDController m_telescopingController = m_telescopingMotor.getPIDController();
 
+  private double m_telescopingReference = 0;
+
   /** Creates a new TelescopingSubsystem. */
   public TelescopingSubsystem() {
    m_telescopingEncoder.setPositionConversionFactor(0.0567); //TODO pos conversion factor
@@ -56,6 +58,11 @@ public class TelescopingSubsystem extends SubsystemBase{
 
   public void setTelescopingReference(double referenceDEG) {
     m_telescopingController.setReference(referenceDEG, ControlType.kPosition);
+    m_telescopingReference = referenceDEG;
+  }
+
+  public boolean atSetpoint() {
+    return Math.abs(telescopingPosIN() - m_telescopingReference) < 1;
   }
 
   public void matchStow() {
@@ -63,6 +70,6 @@ public class TelescopingSubsystem extends SubsystemBase{
   }
 
   public void intakePosition() {
-    setTelescopingReference(6);
+    setTelescopingReference(5);
   }
 }

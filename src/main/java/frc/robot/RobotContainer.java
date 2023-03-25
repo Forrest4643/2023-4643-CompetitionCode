@@ -18,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.DriveSubsystem;
 import io.github.oblarg.oblog.Loggable;
@@ -26,11 +27,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.autoConstants;
 import frc.robot.Constants.driveConstants;
 import frc.robot.commands.cartesianMecanumDrive;
 import frc.robot.commands.deployControl;
-import frc.robot.commands.intakeControl;
 import frc.robot.subsystems.*;
 
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -42,7 +45,7 @@ public class RobotContainer implements Loggable{
   private Sensors m_sensors = new Sensors();
   private Trajectory Auto1;
 
-  private Trigger deployDeadswitch, intakeDeadSwitch;
+  private Trigger deployDeadswitch, intakeDeadSwitch, rightBumperTrigger;
 
   private DriveSubsystem m_driveSubsystem = new DriveSubsystem(m_sensors);
   private TelescopingSubsystem m_telescopingSubsystem = new TelescopingSubsystem();
@@ -55,7 +58,6 @@ public class RobotContainer implements Loggable{
 
   private Command m_deployControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
 
-  private Command m_intakeControl = new intakeControl(m_wristSubsystem, m_armSubsystem, m_telescopingSubsystem, m_mandibleSubsystem, () -> m_operateController.getRawAxis(XboxController.Axis.kLeftY.value));
 
   public cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
@@ -63,12 +65,17 @@ public class RobotContainer implements Loggable{
         () -> -m_driveController.getRawAxis(XboxController.Axis.kRightX.value));
   
   public Command unStow() {
-      return new InstantCommand(m_armSubsystem::unStow1, m_armSubsystem).until(
+      return new SequentialCommandGroup(new InstantCommand(m_armSubsystem::unStow1)).andThen(new WaitUntilCommand(
           m_armSubsystem::atSetpoint).andThen(
-            m_wristSubsystem::unStow, m_wristSubsystem).until(
-              m_wristSubsystem::atSetpoint).andThen(
-                m_armSubsystem::unStow2, m_armSubsystem);
+            m_wristSubsystem::unStow).andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint)
+            .andThen(m_armSubsystem::unStow2)));
+
   }
+
+  private Command intakeInit() {
+    return new InstantCommand(m_armSubsystem::intakePosition).andThen(new WaitUntilCommand(m_armSubsystem::atSetpoint))
+                 .andThen(new InstantCommand(m_telescopingSubsystem::intakePosition));
+   }
 
   public RobotContainer() {
 
@@ -109,19 +116,33 @@ public class RobotContainer implements Loggable{
     
     deployDeadswitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
     intakeDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > 0.5);
+    rightBumperTrigger = new Trigger(() -> m_operateController.getRightBumperPressed());
 
     deployDeadswitch.whileTrue(m_deployControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow).alongWith(new InstantCommand(m_telescopingSubsystem::matchStow))
-    .until(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::matchStow));
+    .andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint).alongWith(new WaitUntilCommand(m_telescopingSubsystem::atSetpoint)).andThen(m_armSubsystem::matchStow)));
 
-    intakeDeadSwitch.whileTrue(m_intakeControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow).alongWith(new InstantCommand(m_telescopingSubsystem::matchStow))
-      .until(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::matchStow));
+    intakeDeadSwitch.whileTrue(new InstantCommand(m_armSubsystem::intakePosition)
+      .andThen(new WaitUntilCommand(m_armSubsystem::atSetpoint))
+        .andThen(new InstantCommand(m_wristSubsystem::intakePosition)).andThen(new InstantCommand(m_telescopingSubsystem::intakePosition)))
+         .onFalse(new InstantCommand(m_wristSubsystem::matchStow).alongWith(new InstantCommand(m_telescopingSubsystem::matchStow))
+          .andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint).alongWith(new WaitUntilCommand(m_telescopingSubsystem::atSetpoint))
+            .andThen(new InstantCommand(m_armSubsystem::matchStow))));
 
     new JoystickButton(m_operateController, XboxController.Button.kRightBumper.value).and(deployDeadswitch)
-      .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootFull)));
+      .onTrue(new InstantCommand(m_mandibleSubsystem::shootFull))
+        .onFalse(new InstantCommand(m_mandibleSubsystem::stopMotors));
 
-    new JoystickButton(m_operateController, XboxController.Button.kLeftBumper.value).and(deployDeadswitch)
-      .whileTrue(new RepeatCommand(new InstantCommand(m_mandibleSubsystem::shootHalf)));
+    new JoystickButton(m_operateController, XboxController.Button.kRightBumper.value)
+    .onTrue(new InstantCommand(m_armSubsystem::substationIntake)
+    .andThen(new WaitUntilCommand(m_armSubsystem::atSetpoint))
+      .andThen(new InstantCommand(m_wristSubsystem::setHorizontal)))
+        .onFalse(new InstantCommand(m_wristSubsystem::matchStow)
+          .andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint))
+            .andThen(new InstantCommand(m_armSubsystem::matchStow)));
 
+    new JoystickButton(m_operateController, XboxController.Button.kLeftBumper.value)
+     .onTrue(new InstantCommand(m_mandibleSubsystem::intake))
+      .whileFalse(new InstantCommand(m_mandibleSubsystem::stopMotors));
   }
 
   public Command getAutonomousCommand() {

@@ -12,6 +12,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.wristConstants;
@@ -21,13 +22,13 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   private ArmSubsystem m_armSubsystem;
  
-  private static double m_kP = 0.0001;
+  private static double m_kP = 0.001;
   private static double m_kI = 0.0;
-  private static double m_kD = 0.0;
+  private static double m_kD = 0.001;
 
-  private static double m_wristOffsetDEG = -120;
+  private static final double m_wristOffsetDEG = 115;
 
-  private static double allowedErrorDEG = 1;
+  private static double allowedErrorDEG = 5;
 
   private double m_wristReferencePointDEG = 0;
 
@@ -40,7 +41,7 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   private final SparkMaxPIDController m_wristController = m_wristMotor.getPIDController();
 
-  private ArmFeedforward m_wristFF = new ArmFeedforward(0, 0.5, 0);
+  private ArmFeedforward m_wristFF = new ArmFeedforward(0, 0.1, 0);
 
   /** Creates a new wristSubsystem. */
   public WristSubsystem(ArmSubsystem m_ArmSubsystem) {
@@ -49,7 +50,7 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
     m_wristEncoder.setPositionConversionFactor(360);
 
-    m_wristEncoder.setZeroOffset(157.0082331); 
+    m_wristEncoder.setZeroOffset(342.8082204); 
 
     m_wristController.setFeedbackDevice(m_wristEncoder);
 
@@ -57,7 +58,9 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
     m_wristController.setI(m_kI);
     m_wristController.setD(m_kD);
 
-    m_wristController.setIZone(5);
+    m_wristController.setIZone(1);
+
+    m_wristMotor.setSmartCurrentLimit(10);
 
     m_wristMotor.burnFlash();
   }
@@ -70,25 +73,29 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
   }
 
   public double getWristPosition() {
-    return -m_wristEncoder.getPosition() - m_wristOffsetDEG;
+    return -m_wristEncoder.getPosition() + m_wristOffsetDEG;
   }
 
   public boolean atSetpoint() {
-    return Math.abs(m_wristEncoder.getPosition() + m_wristReferencePointDEG) < allowedErrorDEG;
+    return Math.abs(getWristPosition() - m_wristReferencePointDEG) < allowedErrorDEG;
   }
 
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
-    m_wristController.setReference(m_wristReferencePointDEG, ControlType.kSmartMotion,
-     0, m_wristFF.calculate(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition(), 0));
+    m_wristController.setReference((-m_wristReferencePointDEG) + m_wristOffsetDEG, ControlType.kSmartMotion,
+     0, m_wristFF.calculate(Units.degreesToRadians(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition()), 0));
   }
  
   public void unStow() {
-    setWristReference(60);
+    setWristReference(-60);
   }
 
   public void matchStow() {
-    setWristReference(60);
+    setWristReference(-60);
+  }
+
+  public void intakePosition() {
+    setWristReference(-10);
   }
 
   public void setHorizontal() {

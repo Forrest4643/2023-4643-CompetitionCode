@@ -89,11 +89,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    //m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+      //m_autonomousCommand.schedule();
     }
   }
 
@@ -115,7 +115,7 @@ public class Robot extends TimedRobot {
 
     m_cartesianMecanumDrive = m_robotContainer.m_cartesianMecanumDrive;
 
-    // m_robotContainer.unStow();
+    m_robotContainer.unStow().schedule();;
 
     m_cartesianMecanumDrive.schedule();
   }

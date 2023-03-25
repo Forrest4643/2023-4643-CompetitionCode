@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,6 +19,7 @@ public class mandibleSubsystem extends SubsystemBase {
   /** Creates a new mandibleSubsystem. */
   public mandibleSubsystem() {
     m_mandibleMotor.enableVoltageCompensation(12);
+    m_mandibleMotor.setIdleMode(IdleMode.kBrake);
   }
 
   @Override
@@ -26,8 +28,8 @@ public class mandibleSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("intakeCurrent", getIntakeCurrent());
   }
 
-  public void intakeFull() {
-    m_mandibleMotor.setVoltage(12);
+  public void intake() {
+    m_mandibleMotor.setVoltage(4);
   }
 
   public void intakeHold() {
@@ -42,6 +44,10 @@ public class mandibleSubsystem extends SubsystemBase {
     m_mandibleMotor.setVoltage(-6);
   }
 
+  public void stopMotors() {
+    m_mandibleMotor.setVoltage(0);
+  }
+
   public boolean intakeCurrentSpike() {
     return m_mandibleMotor.getOutputCurrent() > mandibleConstants.kCurrentThresh;
   }
@@ -50,7 +56,7 @@ public class mandibleSubsystem extends SubsystemBase {
   }
 
   public boolean intakeAtSpeed() {
-    return m_mandibleMotor.getEncoder().getVelocity() > 2000;
+    return m_mandibleMotor.getEncoder().getVelocity() > 10000;
   }
 
 

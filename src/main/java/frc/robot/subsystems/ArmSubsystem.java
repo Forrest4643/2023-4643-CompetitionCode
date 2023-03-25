@@ -55,7 +55,7 @@ public class ArmSubsystem extends SubsystemBase {
 
   private static double m_armEncoderOffset = -80;
 
-  private static double allowedErrorDEG = 3;
+  private static double allowedErrorDEG = 5;
 
   private double m_armReferencePointDEG;
 
@@ -106,7 +106,6 @@ public class ArmSubsystem extends SubsystemBase {
   public void periodic() {
    
     SmartDashboard.putNumber("armEncoderPosition", armEncoderPosition());
-    SmartDashboard.putNumber("armMotorPosition", m_armMotor.getEncoder().getPosition());
     SmartDashboard.putNumber("armSetpoint", m_armReferencePointDEG);
     SmartDashboard.putBoolean("armAtSetpoint?", atSetpoint());
 
@@ -119,12 +118,12 @@ public class ArmSubsystem extends SubsystemBase {
 
     SmartDashboard.putNumber("armArbFF output", m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0));
 
-    System.out.println("Arm Reported Position:" + m_armMotorEncoder.getPosition());
+    //System.out.println("Arm Reported Position:" + m_armMotorEncoder.getPosition());
 
   }
 
   public boolean atSetpoint() {
-    return Math.abs(m_armMotorEncoder.getPosition() - m_armReferencePointDEG) < allowedErrorDEG;
+    return Math.abs(-armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
   }
   
   public void setArmReferenceDEG(double referenceDEG) {
@@ -148,18 +147,22 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void matchStow() {
-  setArmReferenceDEG(-80);
-  System.out.println("matchStow!");
+    setArmReferenceDEG(-70);
+    System.out.println("matchStow!");
   }
 
   public void intakePosition() {
-    setArmReferenceDEG(-40);
+    setArmReferenceDEG(-50);
   }
 
   public void armHorizontal() {
     setArmReferenceDEG(0);;
     System.out.println("armHorizontal!");
   }
+
+  public void substationIntake() {
+    setArmReferenceDEG(armConstants.kSubstationPos);
+  } 
 
   
 

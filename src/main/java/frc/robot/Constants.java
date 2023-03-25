@@ -63,17 +63,13 @@ public class Constants implements Loggable {
         public static final double kMaxAccelDegSec = 45;
 
         public static final double kScoreLowCubePos = -45;
-        public static final double kScoreMidCubePos = -25;
-        public static final double kScoreHighCubePos = 0;
+        public static final double kScoreMidCubePos = 15;
+        public static final double kScoreHighCubePos = 10;
 
-        public static final double kScoreLowConePos = -45;
-        public static final double kScoreMidConePos = -20;
+        public static final double kScoreLowConePos = -60;
+        public static final double kScoreMidConePos = 10;
      
-        public static final double kStowPos = 0;
-
-        public static final double kSubstationPos = 60;
-
-        public static final double kG = 0;
+        public static final double kSubstationPos = 10;
 
     }
 
@@ -85,7 +81,7 @@ public class Constants implements Loggable {
         public static final double kScoreHighCubePos = 12.5;
 
         public static final double kScoreLowConePos = 0;
-        public static final double kScoreMidConePos = 6;
+        public static final double kScoreMidConePos = 0;
 
         public static final double kStowPos = 0;
 
@@ -102,14 +98,14 @@ public class Constants implements Loggable {
         public static final double kMaxVelocityMeters = 0;
         public static final double kMaxAccelMeter = 0;
 
-        public static final double kScoreLowCubePos = 90;
-        public static final double kScoreMidCubePos = 100;
-        public static final double kScoreHighCubePos = 150;
+        public static final double kScoreLowCubePos = -40;
+        public static final double kScoreMidCubePos = -15;
+        public static final double kScoreHighCubePos = -15;
 
-        public static final double kScoreLowConePos = 60;
-        public static final double kScoreMidConePos = 120;
+        public static final double kScoreLowConePos = -40;
+        public static final double kScoreMidConePos = 15;
 
-        public static final double kSubstationPos = 120;
+        public static final double kSubstationPos = 15;
 
         public static final double kWristMinPositionDEG = -120;
         public static final double kWristMaxPositionDEG = 120;
@@ -123,7 +119,7 @@ public class Constants implements Loggable {
 
         public static final double kHoldVoltage = 0.5;
 
-        public static final double kCurrentThresh = 10;
+        public static final double kCurrentThresh = 19;
     }
  
     public static final class visionConstants {

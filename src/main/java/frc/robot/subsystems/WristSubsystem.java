@@ -22,13 +22,13 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
   private ArmSubsystem m_armSubsystem;
  
-  private static double m_kP = 0.001;
+  private static double m_kP = 0.004;
   private static double m_kI = 0.0;
   private static double m_kD = 0.001;
 
   private static final double m_wristOffsetDEG = 115;
 
-  private static double allowedErrorDEG = 5;
+  private static double allowedErrorDEG = 7;
 
   private double m_wristReferencePointDEG = 0;
 
@@ -48,11 +48,13 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
     this.m_armSubsystem = m_ArmSubsystem;
 
-    m_wristEncoder.setPositionConversionFactor(360);
+    m_wristEncoder.setPositionConversionFactor(367.34);
 
-    m_wristEncoder.setZeroOffset(342.8082204); 
+    m_wristEncoder.setZeroOffset(219); 
 
     m_wristController.setFeedbackDevice(m_wristEncoder);
+
+    m_wristController.setOutputRange(-1,1);
 
     m_wristController.setP(m_kP);
     m_wristController.setI(m_kI);
@@ -60,9 +62,12 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
 
     m_wristController.setIZone(1);
 
-    m_wristMotor.setSmartCurrentLimit(10);
+    m_wristMotor.setSmartCurrentLimit(15);
+
+    m_wristMotor.setInverted(false);
 
     m_wristMotor.burnFlash();
+
   }
 
   @Override
@@ -87,15 +92,19 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
   }
  
   public void unStow() {
-    setWristReference(-60);
+    setWristReference(-90);
+  }
+
+  public void holdForUnstow() {
+    setWristReference(75);
   }
 
   public void matchStow() {
-    setWristReference(-60);
+    setWristReference(-90);
   }
 
   public void intakePosition() {
-    setWristReference(-10);
+    setWristReference(0);
   }
 
   public void setHorizontal() {

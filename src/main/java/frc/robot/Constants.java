@@ -33,7 +33,7 @@ public class Constants implements Loggable {
 
         public static final MecanumDriveKinematics kDriveKinematics = new MecanumDriveKinematics(kFrontLeftWheelMeters, kFrontRightWheelMeters, kRearLeftWheelMeters, kRearRightWheelMeters); 
 
-        public static final int kDriveSparkSmartCurrentLimit = 35; //Amps
+        public static final int kDriveSparkSmartCurrentLimit = 40; //Amps
         
         public static final double steerkP = 0.085;
         public static final double steerkI = 0.0;
@@ -63,13 +63,13 @@ public class Constants implements Loggable {
         public static final double kMaxAccelDegSec = 45;
 
         public static final double kScoreLowCubePos = -45;
-        public static final double kScoreMidCubePos = 15;
+        public static final double kScoreMidCubePos = -10;
         public static final double kScoreHighCubePos = 10;
 
         public static final double kScoreLowConePos = -60;
-        public static final double kScoreMidConePos = 10;
+        public static final double kScoreMidConePos = -3;
      
-        public static final double kSubstationPos = 10;
+        public static final double kSubstationPos = 15;
 
     }
 
@@ -81,7 +81,7 @@ public class Constants implements Loggable {
         public static final double kScoreHighCubePos = 12.5;
 
         public static final double kScoreLowConePos = 0;
-        public static final double kScoreMidConePos = 0;
+        public static final double kScoreMidConePos = 4;
 
         public static final double kStowPos = 0;
 
@@ -103,7 +103,7 @@ public class Constants implements Loggable {
         public static final double kScoreHighCubePos = -15;
 
         public static final double kScoreLowConePos = -40;
-        public static final double kScoreMidConePos = 15;
+        public static final double kScoreMidConePos = -45;
 
         public static final double kSubstationPos = 15;
 

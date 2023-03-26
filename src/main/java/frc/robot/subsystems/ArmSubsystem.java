@@ -38,18 +38,18 @@ public class ArmSubsystem extends SubsystemBase {
 
   private ArmFeedforward m_armFeedforward; 
 
-  private static double m_kP = 0.005; //TODO tune arm PID
+  private static double m_kP = 0.004; //TODO tune arm PID
 
   private static double m_kI = 0.0;
  
-  private static double m_kD = 0.0005;
+  private static double m_kD = 0.001;
 
   private static double m_kF = 0.0;
 
   private double m_kG;
 
   private static final double m_kGmin = 0.9;
-  private static final double m_kGmax = 1.2;
+  private static final double m_kGmax = 1.5;
 
   private double m_kGmultiplier = m_kGmax / m_kGmin; //retracted kG over extended kG
 
@@ -69,7 +69,7 @@ public class ArmSubsystem extends SubsystemBase {
   m_armMotorEncoder.setInverted(true);
   m_armMotor.setInverted(false);
 
-  m_armMotor.setSmartCurrentLimit(35);
+  m_armMotor.setSmartCurrentLimit(45);
 
   m_armMotor.getEncoder().setPositionConversionFactor(0.34375);
   //TODO change to absolute encoder when breakout board arrives
@@ -87,7 +87,7 @@ public class ArmSubsystem extends SubsystemBase {
   m_armController.setFF(m_kF);
 
   m_armController.setSmartMotionMaxAccel(400, 0);
-  m_armController.setSmartMotionMaxVelocity(100, 0);
+  m_armController.setSmartMotionMaxVelocity(150, 0);
   m_armController.setSmartMotionAllowedClosedLoopError(2, 0);
 
   m_armController.setIZone(3, 0);
@@ -130,7 +130,7 @@ public class ArmSubsystem extends SubsystemBase {
     m_armReferencePointDEG = referenceDEG;
     m_armController.setReference(m_armReferencePointDEG - m_armEncoderOffset, ControlType.kSmartMotion, 0, 
       m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0));
-    //System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
+    System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
 
 
   }
@@ -152,7 +152,7 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void intakePosition() {
-    setArmReferenceDEG(-50);
+    setArmReferenceDEG(-35);
   }
 
   public void armHorizontal() {

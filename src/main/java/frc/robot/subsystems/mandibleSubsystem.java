@@ -37,7 +37,7 @@ public class mandibleSubsystem extends SubsystemBase {
   }
 
   public void shootFull() {
-    m_mandibleMotor.setVoltage(-12);
+    m_mandibleMotor.setVoltage(-3);
   }
 
   public void shootHalf() {

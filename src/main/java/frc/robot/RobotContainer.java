@@ -65,10 +65,10 @@ public class RobotContainer implements Loggable{
         () -> -m_driveController.getRawAxis(XboxController.Axis.kRightX.value));
   
   public Command unStow() {
-      return new SequentialCommandGroup(new InstantCommand(m_armSubsystem::unStow1)).andThen(new WaitUntilCommand(
-          m_armSubsystem::atSetpoint).andThen(
-            m_wristSubsystem::unStow).andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint)
-            .andThen(m_armSubsystem::unStow2)));
+      return new SequentialCommandGroup(new InstantCommand(m_armSubsystem::unStow1))
+        .alongWith(new InstantCommand(m_wristSubsystem::holdForUnstow)).andThen(new WaitUntilCommand(
+          m_armSubsystem::atSetpoint).andThen(m_wristSubsystem::unStow)
+          .andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint).andThen(m_armSubsystem::unStow2)));
 
   }
 

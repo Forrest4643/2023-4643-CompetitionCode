@@ -231,7 +231,8 @@ public class DriveSubsystem extends SubsystemBase implements Loggable {
   public void updateOdometry() {
 
     // updates and gets estimated photonvision pose
-    Optional<EstimatedRobotPose> result = m_sensors.getEstimatedGlobalPose(m_drivePoseEstimator.getEstimatedPosition());
+    Optional<EstimatedRobotPose> result = m_sensors.getEstimatedGlobalPose
+      (m_drivePoseEstimator.getEstimatedPosition());
 
     if (result.isPresent()) {
 

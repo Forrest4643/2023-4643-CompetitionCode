@@ -56,9 +56,10 @@ public class RobotContainer implements Loggable{
   private XboxController m_driveController = new XboxController(0);
   private XboxController m_operateController = new XboxController(1);
 
-  private Command m_deployControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_operateController);
+  private Command m_deployControl = new deployControl(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem, m_mandibleSubsystem, m_operateController);
 
-
+  // private Trigger coneDeploy = m_deployControl::coneDeploy; TODO
+  
   public cartesianMecanumDrive m_cartesianMecanumDrive = new cartesianMecanumDrive(m_driveSubsystem, m_sensors,
     () -> -m_driveController.getRawAxis(XboxController.Axis.kLeftX.value), 
       () -> m_driveController.getRawAxis(XboxController.Axis.kLeftY.value), 
@@ -117,10 +118,12 @@ public class RobotContainer implements Loggable{
     deployDeadswitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kLeftTrigger.value) > 0.5);
     intakeDeadSwitch = new Trigger(() -> m_operateController.getRawAxis(XboxController.Axis.kRightTrigger.value) > 0.5);
     rightBumperTrigger = new Trigger(() -> m_operateController.getRightBumperPressed());
+    
 
     deployDeadswitch.whileTrue(m_deployControl).onFalse(new InstantCommand(m_wristSubsystem::matchStow).alongWith(new InstantCommand(m_telescopingSubsystem::matchStow))
     .andThen(new WaitUntilCommand(m_wristSubsystem::atSetpoint).alongWith(new WaitUntilCommand(m_telescopingSubsystem::atSetpoint)).andThen(m_armSubsystem::matchStow)));
 
+    //deployDeadswitch.and(m_deployControl.coneDeploy).onTrue(m_deployControl::coneDeploy); TODO
     intakeDeadSwitch.whileTrue(new InstantCommand(m_armSubsystem::intakePosition)
       .andThen(new WaitUntilCommand(m_armSubsystem::atSetpoint))
         .andThen(new InstantCommand(m_wristSubsystem::intakePosition)).andThen(new InstantCommand(m_telescopingSubsystem::intakePosition)))

@@ -123,7 +123,7 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public boolean atSetpoint() {
-    return Math.abs(-armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
+    return Math.abs(armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
   }
   
   public void setArmReferenceDEG(double referenceDEG) {
@@ -167,6 +167,6 @@ public class ArmSubsystem extends SubsystemBase {
   
 
   public double armEncoderPosition() {
-    return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
+    return -(-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
   }
 }

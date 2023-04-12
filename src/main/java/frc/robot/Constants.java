@@ -71,6 +71,8 @@ public class Constants implements Loggable {
      
         public static final double kSubstationPos = 15;
 
+        public static final double kConeDeployDeg = 5;
+
     }
 
     public static final class telescopingConstant {

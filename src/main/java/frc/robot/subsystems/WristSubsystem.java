@@ -88,7 +88,7 @@ public class WristSubsystem extends SubsystemBase implements Loggable {
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
     m_wristController.setReference((-m_wristReferencePointDEG) + m_wristOffsetDEG, ControlType.kSmartMotion,
-     0, m_wristFF.calculate(Units.degreesToRadians(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition()), 0));
+     0, m_wristFF.calculate(Units.degreesToRadians(m_wristReferencePointDEG - m_armSubsystem.armEncoderPosition()), 0));
   }
  
   public void unStow() {

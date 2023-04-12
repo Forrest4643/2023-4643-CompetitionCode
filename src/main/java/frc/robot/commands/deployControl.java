@@ -7,12 +7,14 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.armConstants;
 import frc.robot.Constants.telescopingConstant;
 import frc.robot.Constants.wristConstants;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.TelescopingSubsystem;
 import frc.robot.subsystems.WristSubsystem;
+import frc.robot.subsystems.mandibleSubsystem;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -21,6 +23,7 @@ public class deployControl extends CommandBase implements Loggable{
   private WristSubsystem m_wristSubsystem;
   private TelescopingSubsystem m_telescopingSubsystem;
   private XboxController m_operateController;
+  private mandibleSubsystem m_mandibleSubsystem;
 
   private String kLow = "LOW";
 
@@ -29,6 +32,8 @@ public class deployControl extends CommandBase implements Loggable{
   private String kHigh = "HIGH";
 
   private String kConeHighErr = "ERR";
+
+  public Trigger coneDeploy;
 
 
   @Log
@@ -48,9 +53,10 @@ public class deployControl extends CommandBase implements Loggable{
 
 
   /** Creates a new ConeDeploy. */
-  public deployControl(ArmSubsystem m_ArmSubsystem, WristSubsystem m_WristSubsystem, TelescopingSubsystem m_TelescopingSubsystem, XboxController m_OperateController) {
+  public deployControl(ArmSubsystem m_ArmSubsystem, WristSubsystem m_WristSubsystem, TelescopingSubsystem m_TelescopingSubsystem, mandibleSubsystem m_MandibleSubsystem, XboxController m_OperateController) {
     this.m_armSubsystem = m_ArmSubsystem;
     this.m_wristSubsystem = m_WristSubsystem;
+    this.m_mandibleSubsystem = m_MandibleSubsystem;
     this.m_operateController = m_OperateController;
     this.m_telescopingSubsystem = m_TelescopingSubsystem;
 
@@ -86,11 +92,14 @@ public class deployControl extends CommandBase implements Loggable{
 
     if(m_coneDeploy == true) {
       activeGamepiece = "CONE";
+      
     } else {
       activeGamepiece = "CUBE";
     }
 
-      deploySelect(m_deployHeight, m_coneDeploy);
+    coneDeploy = new Trigger(() -> m_coneDeploy);
+
+    deploySelect(m_deployHeight, m_coneDeploy);
     
   }
 
@@ -103,6 +112,11 @@ public class deployControl extends CommandBase implements Loggable{
   @Override
   public boolean isFinished() {
     return false;
+  }
+
+  private void deployCone() {
+    double armSetpoint = m_armSubsystem.armEncoderPosition() - armConstants.kConeDeployDeg;
+    m_armSubsystem.setArmReferenceDEG(armSetpoint);
   }
 
   public void deploySelect(int deployHeight, boolean coneDeploy) {
@@ -146,5 +160,6 @@ public class deployControl extends CommandBase implements Loggable{
         break;
     } }
 
+   
   }
 }

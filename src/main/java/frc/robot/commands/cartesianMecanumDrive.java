@@ -55,6 +55,7 @@ public class cartesianMecanumDrive extends CommandBase  {
       DoubleSupplier speedY, DoubleSupplier driverHeadingAdjustment) {
     this.m_driveSubsystem = m_driveSubsystem;
     this.m_sensors = m_Sensors;
+    //applies a sine function to the X and Y driver inputs for ease of use. 
     this.speedX = () -> Math.sin(MathUtil.applyDeadband(speedX.getAsDouble(), driveConstants.kInputDeadband) * driveConstants.kSpeedSinMultiplier);
     this.speedY = () -> Math.sin(MathUtil.applyDeadband(speedY.getAsDouble(), driveConstants.kInputDeadband) * driveConstants.kSpeedSinMultiplier);
     this.driverHeadingAdjustment = driverHeadingAdjustment;

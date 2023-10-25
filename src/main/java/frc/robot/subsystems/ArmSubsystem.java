@@ -110,13 +110,6 @@ public class ArmSubsystem extends SubsystemBase {
     SmartDashboard.putBoolean("armAtSetpoint?", atSetpoint());
 
     
-    m_kG = ((MathUtil.clamp(m_telescopingSubsystem.telescopingPosIN(), 1, telescopingConstant.kMaxPositionIN)
-     / telescopingConstant.kMaxPositionIN)
-     * m_kGmultiplier);
-    
-    m_armFeedforward = new ArmFeedforward(0, m_kG, 0);
-
-    SmartDashboard.putNumber("armArbFF output", m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0));
 
     //System.out.println("Arm Reported Position:" + m_armMotorEncoder.getPosition());
 
@@ -129,10 +122,8 @@ public class ArmSubsystem extends SubsystemBase {
   public void setArmReferenceDEG(double referenceDEG) {
     m_armReferencePointDEG = referenceDEG;
     m_armController.setReference(m_armReferencePointDEG - m_armEncoderOffset, ControlType.kSmartMotion, 0, 
-      m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0));
+      arbFFVolts());
     System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
-
-
   }
 
   public void unStow1() {
@@ -164,9 +155,32 @@ public class ArmSubsystem extends SubsystemBase {
     setArmReferenceDEG(armConstants.kSubstationPos);
   } 
 
-  
-
   public double armEncoderPosition() {
     return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
+  }
+
+  public double arbFFVolts() {
+
+    m_kG = ((MathUtil.clamp(m_telescopingSubsystem.telescopingPosIN(), 1, telescopingConstant.kMaxPositionIN)
+    / telescopingConstant.kMaxPositionIN)
+    * m_kGmultiplier);
+   
+   m_armFeedforward = new ArmFeedforward(0, m_kG, 0);
+
+   return m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0);
+  }
+
+  public void setArbFF() {
+   setArmVolts(arbFFVolts());
+   System.out.println("volts:"+arbFFVolts());
+   System.out.println("armPosition:"+armEncoderPosition());
+  }
+
+  public void setArmVolts(double volts) {
+    m_armMotor.setVoltage(volts);
+  }
+
+  public void stopArmMotor() {
+    m_armMotor.disable();
   }
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import io.github.oblarg.oblog.Logger;
 
 
@@ -30,6 +31,8 @@ public class Robot extends TimedRobot {
   private Command m_cartesianMecanumDrive;
 
   private RobotContainer m_robotContainer;
+
+  private Command m_arbArmFFvolts;
 
   
 
@@ -129,12 +132,15 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+
+    m_arbArmFFvolts = m_robotContainer.arbArmFFTest;
+    m_arbArmFFvolts.schedule();
+
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-
   }
 
   /** This function is called once when the robot is first started up. */

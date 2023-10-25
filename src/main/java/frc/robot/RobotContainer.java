@@ -77,6 +77,7 @@ public class RobotContainer implements Loggable{
                  .andThen(new InstantCommand(m_telescopingSubsystem::intakePosition));
    }
 
+
   public RobotContainer() {
 
     // The first argument is the root container
@@ -94,6 +95,8 @@ public class RobotContainer implements Loggable{
     }
 
   }
+
+  public Command arbArmFFTest = new RepeatCommand(new InstantCommand(m_armSubsystem::arbFFVolts));
 
   private void configureButtonBindings() {
     new JoystickButton(m_driveController, XboxController.Button.kA.value)
@@ -144,6 +147,8 @@ public class RobotContainer implements Loggable{
      .onTrue(new InstantCommand(m_mandibleSubsystem::intake))
       .whileFalse(new InstantCommand(m_mandibleSubsystem::stopMotors));
   }
+
+
 
   public Command getAutonomousCommand() {
 

@@ -11,14 +11,19 @@ import frc.robot.Constants.armConstants;
 import frc.robot.Constants.telescopingConstant;
 import frc.robot.Constants.wristConstants;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.MandibleSubsystem;
 import frc.robot.subsystems.TelescopingSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 public class deployControl extends CommandBase{
-  private ArmSubsystem m_armSubsystem;
+
   private WristSubsystem m_wristSubsystem;
+  private ArmSubsystem m_armSubsystem;
   private TelescopingSubsystem m_telescopingSubsystem;
+  private MandibleSubsystem m_mandibleSubsystem;
   private XboxController m_operateController;
+
+
 
   private String kLow = "LOW";
 
@@ -41,13 +46,14 @@ public class deployControl extends CommandBase{
 
 
   /** Creates a new ConeDeploy. */
-  public deployControl(ArmSubsystem m_ArmSubsystem, WristSubsystem m_WristSubsystem, TelescopingSubsystem m_TelescopingSubsystem, XboxController m_OperateController) {
-    this.m_armSubsystem = m_ArmSubsystem;
+  public deployControl(ArmSubsystem m_ArmSubsystem, WristSubsystem m_WristSubsystem, TelescopingSubsystem m_TelescopingSubsystem, MandibleSubsystem m_MandibleSubsystem, XboxController m_OperateController) {
     this.m_wristSubsystem = m_WristSubsystem;
-    this.m_operateController = m_OperateController;
+    this.m_armSubsystem = m_ArmSubsystem;
     this.m_telescopingSubsystem = m_TelescopingSubsystem;
+    this.m_mandibleSubsystem = m_MandibleSubsystem;
+    this.m_operateController = m_OperateController;
 
-    addRequirements(m_armSubsystem, m_wristSubsystem, m_telescopingSubsystem);
+    addRequirements(m_wristSubsystem, m_armSubsystem, m_telescopingSubsystem, m_mandibleSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -63,20 +69,6 @@ public class deployControl extends CommandBase{
   @Override
   public void execute() {
 
-    if (m_operateController.getAButtonPressed()) {
-      m_deployHeight = MathUtil.clamp(m_deployHeight - 1, 0, 2);
-    }
-
-    if (m_operateController.getYButtonPressed()) {
-      m_deployHeight = MathUtil.clamp(m_deployHeight + 1, 0, 2);
-    }
-
-    if (m_operateController.getXButtonPressed()) {
-      m_coneDeploy = false;
-    } else if (m_operateController.getBButtonPressed()) {
-      m_coneDeploy = true;
-    }
-
     if(m_coneDeploy == true) {
       activeGamepiece = "CONE";
     } else {
@@ -85,17 +77,6 @@ public class deployControl extends CommandBase{
 
       deploySelect(m_deployHeight, m_coneDeploy);
     
-  }
-
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-  }
-
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
   }
 
   public void deploySelect(int deployHeight, boolean coneDeploy) {
@@ -138,6 +119,33 @@ public class deployControl extends CommandBase{
         m_deployStatus = kConeHighErr;
         break;
     } }
+  }
+    public void deployHeightUp() {
+      m_deployHeight = MathUtil.clamp(m_deployHeight - 1, 0, 2);
+    }
 
+    public void deployheightDown() {
+      m_deployHeight = MathUtil.clamp(m_deployHeight + 1, 0, 2);
+    }
+
+    public void selectCones() {
+      m_coneDeploy = true;
+    }
+
+    public void selectCubes() {
+      m_coneDeploy = false;
+    }
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    m_wristSubsystem.matchStow();
+    m_telescopingSubsystem.matchStow();
+    m_mandibleSubsystem.intakeHold();
+  }
+
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return m_operateController.getBButtonPressed();
   }
 }

@@ -11,12 +11,12 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.mandibleConstants;
 
-public class mandibleSubsystem extends SubsystemBase {
+public class MandibleSubsystem extends SubsystemBase {
   
   private final CANSparkMax m_mandibleMotor = new CANSparkMax(mandibleConstants.kMandibleID, MotorType.kBrushless);
 
   /** Creates a new mandibleSubsystem. */
-  public mandibleSubsystem() {
+  public MandibleSubsystem() {
     m_mandibleMotor.enableVoltageCompensation(12);
     m_mandibleMotor.setIdleMode(IdleMode.kBrake);
   }
@@ -46,11 +46,13 @@ public class mandibleSubsystem extends SubsystemBase {
     m_mandibleMotor.setVoltage(0);
   }
 
-  public boolean intakeCurrentSpike() {
-    return m_mandibleMotor.getOutputCurrent() > mandibleConstants.kCurrentThresh;
-  }
+ 
   public double getIntakeCurrent() {
     return m_mandibleMotor.getOutputCurrent();
+  }
+
+  public boolean intakeCurrentSpike() {
+    return getIntakeCurrent() > mandibleConstants.kCurrentThresh;
   }
 
   public boolean intakeAtSpeed() {

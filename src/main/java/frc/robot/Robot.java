@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-//Programmed by Forrest Lasell during the 2022 FRC season for team 4643, Butte Built Bots
+//Programmed by Forrest Lasell during the 2023 FRC season for team 4643, Butte Built Bots
 
 package frc.robot;
 
@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import io.github.oblarg.oblog.Logger;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 
 
 
@@ -32,7 +32,9 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  private Command m_arbArmFFvolts;
+  private RepeatCommand m_updateArmSmartDashValues; 
+
+  private RepeatCommand m_updateWristSmartDashValues;
 
   
 
@@ -73,17 +75,20 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-    //updating Oblog logger
-    Logger.updateEntries();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    m_updateArmSmartDashValues = m_robotContainer.updateArmSmartDashValues;
+    
+    m_updateWristSmartDashValues = m_robotContainer.updateWristSmartDashValues;
   }
 
   @Override
   public void disabledPeriodic() {
+    m_updateArmSmartDashValues.execute();
+    m_updateWristSmartDashValues.execute();
   }
 
   /**
@@ -121,6 +126,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.unStow().schedule();
 
     m_cartesianMecanumDrive.schedule();
+    
   }
 
   /** This function is called periodically during operator control. */
@@ -133,14 +139,14 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    m_arbArmFFvolts = m_robotContainer.arbArmFFTest;
-    m_arbArmFFvolts.schedule();
+    
 
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    
   }
 
   /** This function is called once when the robot is first started up. */

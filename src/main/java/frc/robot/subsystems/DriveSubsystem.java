@@ -8,7 +8,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.driveConstants;
-import io.github.oblarg.oblog.Loggable;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,7 +37,7 @@ import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 
-public class DriveSubsystem extends SubsystemBase implements Loggable {
+public class DriveSubsystem extends SubsystemBase {
 
   private double m_rotationX = 0;
   private double m_rotationY = 0;

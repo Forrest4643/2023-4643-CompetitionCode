@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.driveConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Sensors;
-import io.github.oblarg.oblog.annotations.Log;
 
 public class cartesianMecanumDrive extends CommandBase  {
 
@@ -45,7 +44,6 @@ public class cartesianMecanumDrive extends CommandBase  {
 
   private double m_steerSensitivity = 4;
 
-  @Log
   private String rotationMode = "COR: Centered";
 
   private Translation2d m_COR;
@@ -125,13 +123,6 @@ public class cartesianMecanumDrive extends CommandBase  {
 
     // sending outputs to drive controller
     m_driveSubsystem.cartesianMecanumDrive(speedX, speedY, () -> rotationOutput, () -> m_COR.getX(), () -> m_COR.getY());
-
-    // debug info
-    SmartDashboard.putNumber("speedX", speedX.getAsDouble());
-    SmartDashboard.putNumber("speedY", speedY.getAsDouble());
-    SmartDashboard.putNumber("rotationOutput", rotationOutput);
-    SmartDashboard.putNumber("rotationSpeed", driverHeadingAdjustment.getAsDouble());
-    SmartDashboard.putNumber("expectedHeading", m_expectedHeading);
 
   }
 

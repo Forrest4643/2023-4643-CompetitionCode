@@ -13,10 +13,8 @@ import frc.robot.Constants.wristConstants;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.TelescopingSubsystem;
 import frc.robot.subsystems.WristSubsystem;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Log;
 
-public class deployControl extends CommandBase implements Loggable{
+public class deployControl extends CommandBase{
   private ArmSubsystem m_armSubsystem;
   private WristSubsystem m_wristSubsystem;
   private TelescopingSubsystem m_telescopingSubsystem;
@@ -31,19 +29,14 @@ public class deployControl extends CommandBase implements Loggable{
   private String kConeHighErr = "ERR";
 
 
-  @Log
   private int m_deployHeight = 0;
 
-  @Log 
   private String m_deployStatus = kLow;
 
-  @Log
   private String activeGamepiece = "CUBE";
 
-  @Log
   private boolean m_coneDeploy = false;
 
-  @Log
   private boolean m_manualWristControl = false; 
 
 

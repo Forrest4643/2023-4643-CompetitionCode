@@ -18,6 +18,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.armConstants;
@@ -34,22 +35,22 @@ public class ArmSubsystem extends SubsystemBase {
   //TODO uncomment when breakout board arrives
   //private final SparkMaxAbsoluteEncoder m_armEncoder = m_armMotor.getAbsoluteEncoder(Type.kDutyCycle);
 
-  private final SparkMaxPIDController m_armController = m_armMotor.getPIDController();
+  private SparkMaxPIDController m_armController = m_armMotor.getPIDController();
 
   private ArmFeedforward m_armFeedforward; 
 
-  private static double m_kP = 0.004; //TODO tune arm PID
+  private double m_kP = 0.004; 
 
-  private static double m_kI = 0.0;
+  private double m_kI = 0.0;
  
-  private static double m_kD = 0.001;
+  private double m_kD = 0.001;
 
-  private static double m_kF = 0.0;
+  private double m_kF = 0.0;
 
   private double m_kG;
 
-  private static final double m_kGmin = 0.9;
-  private static final double m_kGmax = 1.5;
+  private double m_kGmin = 0.9; //kG when telescoping is retracted
+  private double m_kGmax = 1.5; //kG wgeb telescoping is extended
 
   private double m_kGmultiplier = m_kGmax / m_kGmin; //retracted kG over extended kG
 
@@ -80,7 +81,13 @@ public class ArmSubsystem extends SubsystemBase {
   //m_armEncoder.setPositionConversionFactor(123.75); //TODO is this right?
   //m_armEncoder.setZeroOffset(118.0008674);
 
+  SmartDashboard.putNumber("Arm_kP", m_kP);
+  SmartDashboard.putNumber("Arm_kI", m_kI);
+  SmartDashboard.putNumber("Arm_kD", m_kD);
+  SmartDashboard.putNumber("Arm_kG_MIN", m_kGmin);
+  SmartDashboard.putNumber("Arm_kG_MAX", m_kGmax);
 
+  
   m_armController.setP(m_kP);
   m_armController.setI(m_kI);
   m_armController.setD(m_kD);
@@ -182,5 +189,30 @@ public class ArmSubsystem extends SubsystemBase {
 
   public void stopArmMotor() {
     m_armMotor.disable();
+  }
+
+  //this runs periodically while robot is disabled
+  public void updateArmSmartDashValues() {
+    //updates PIDG values to what is on the smartdashboard 
+    double sumValuesBefore = m_kP+m_kI+m_kD+m_kGmin+m_kGmax;
+
+    m_kP = SmartDashboard.getNumber("Arm_kP", m_kP);
+    m_kI = SmartDashboard.getNumber("Arm_kI", m_kI);
+    m_kD = SmartDashboard.getNumber("Arm_kD", m_kD);
+    m_kGmin = SmartDashboard.getNumber("Arm_kG", m_kGmin);
+    m_kGmax = SmartDashboard.getNumber("Arm_kG", m_kGmax);
+
+    double sumValuesAfter = m_kP+m_kI+m_kD+m_kGmin+m_kGmax;
+
+    //checks if any values changed, if true update spark controller
+    if(sumValuesBefore != sumValuesAfter) {
+    //applies PID to arm spark controller 
+    m_armController.setP(m_kP);
+    m_armController.setI(m_kI);
+    m_armController.setD(m_kD);
+
+    System.out.println("ARM PID UPDATED!"+"kP="+m_kP+"kI="+m_kI+"kD="+m_kD+"kG_MIN="+m_kGmin+"kG_MAX="+m_kGmax);
+  
+    }
   }
 }

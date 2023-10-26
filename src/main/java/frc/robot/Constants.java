@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-//Programmed by Forrest Lasell during the 2022 FRC season for team 4643, Butte Built Bots
+//Programmed by Forrest Lasell during the 2023 FRC season for team 4643, Butte Built Bots
 
 package frc.robot;
 
@@ -15,11 +15,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import io.github.oblarg.oblog.Loggable;
 
 
-public class Constants implements Loggable {
-    public static class driveConstants implements Loggable{
+public class Constants {
+    public static class driveConstants{
         public static final int kLeftFrontID = 1;
         public static final int kLeftRearID = 2;
         public static final int kRightFrontID = 4;
@@ -128,7 +127,7 @@ public class Constants implements Loggable {
             new Rotation3d(-10, 0, 0));
     }
 
-    public static class autoConstants implements Loggable {
+    public static class autoConstants {
         
 
         public static final double kPXController = 7.0;

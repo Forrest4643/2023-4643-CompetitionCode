@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-//Programmed by Forrest Lasell during the 2022 FRC season for team 4643, Butte Built Bots
+//Programmed by Forrest Lasell during the 2023 FRC season for team 4643, Butte Built Bots
 
 package frc.robot;
 
@@ -21,8 +21,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.DriveSubsystem;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.MecanumControllerCommand;
@@ -39,7 +37,7 @@ import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class RobotContainer implements Loggable{
+public class RobotContainer{
 
   String trajectoryJSON = "Output/Ball1.wpilib.json";
   private Sensors m_sensors = new Sensors();
@@ -80,10 +78,6 @@ public class RobotContainer implements Loggable{
 
   public RobotContainer() {
 
-    // The first argument is the root container
-    // The second argument is whether logging and config should be given separate tabs
-    Logger.configureLoggingAndConfig(this, false);
-
     // Configure the button bindings
     configureButtonBindings();
 
@@ -96,7 +90,6 @@ public class RobotContainer implements Loggable{
 
   }
 
-  public Command arbArmFFTest = new RepeatCommand(new InstantCommand(m_armSubsystem::arbFFVolts));
 
   private void configureButtonBindings() {
     new JoystickButton(m_driveController, XboxController.Button.kA.value)
@@ -148,7 +141,9 @@ public class RobotContainer implements Loggable{
       .whileFalse(new InstantCommand(m_mandibleSubsystem::stopMotors));
   }
 
+  public RepeatCommand updateArmSmartDashValues = new RepeatCommand(new InstantCommand(m_armSubsystem::updateArmSmartDashValues).ignoringDisable(true));
 
+  public RepeatCommand updateWristSmartDashValues = new RepeatCommand(new InstantCommand(m_wristSubsystem::updateWristSmartDashValues).ignoringDisable(true));
 
   public Command getAutonomousCommand() {
 

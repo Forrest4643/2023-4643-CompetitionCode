@@ -25,7 +25,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.visionConstants;
-import io.github.oblarg.oblog.annotations.Config;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.SerialPort;
 
@@ -34,7 +33,7 @@ public class Sensors extends SubsystemBase {
   //creating AHRS device "navX"
   private AHRS navX;
 
-  private AHRS armNavX;
+  //private AHRS armNavX;
 
   //simulated yaw angle, for simulation.
   private SimDouble m_simYawAngle;
@@ -60,11 +59,11 @@ public class Sensors extends SubsystemBase {
     }
 
     // instantiate navx over USB
-    try {
-      armNavX = new AHRS(SerialPort.Port.kUSB);
-    } catch (RuntimeException ex) {
-      DriverStation.reportError("Error instantiating armNavX-USB: " + ex.getMessage(), true);
-    }
+    // try {
+    //   armNavX = new AHRS(SerialPort.Port.kUSB);
+    // } catch (RuntimeException ex) {
+    //   DriverStation.reportError("Error instantiating armNavX-USB: " + ex.getMessage(), true);
+    // }
 
      // sends WPI provided AprilTag locations to the PhotonVision field layout object
     try {
@@ -85,12 +84,7 @@ public class Sensors extends SubsystemBase {
 
   @Override
   public void periodic() {
-    //sending info for debugging to the SmartDashboard
-    SmartDashboard.putNumber("Yaw", navXYawDeg());
-    SmartDashboard.putNumber("Pitch", navXPitch());
-    SmartDashboard.putNumber("Roll", navXRoll());
 
-    SmartDashboard.putNumber("armNavX pitch", armNavxPitchdeg());
   }
 
   @Override
@@ -98,9 +92,9 @@ public class Sensors extends SubsystemBase {
   }
 
 
-  public double armNavxPitchdeg() {
-    return -armNavX.getRoll();
-  }
+  // public double armNavxPitchdeg() {
+  //   return -armNavX.getRoll();
+  // }
 
   public Rotation2d navXRotation2d() {
     return navX.getRotation2d();
@@ -114,7 +108,6 @@ public class Sensors extends SubsystemBase {
     return MathUtil.inputModulus(-navX.getYaw(), 0, 360);
   }
 
-  @Config
   public void setFusedHeadingOffset(double offset) {
     m_fusedHeadingOffset = offset;
   }

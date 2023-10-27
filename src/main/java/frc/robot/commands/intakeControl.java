@@ -48,6 +48,21 @@ public class intakeControl extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {    
+
+   if (m_operateController.getPOV() == 90 || m_operateController.getPOV() == 270) {
+      new InstantCommand(m_armSubsystem::intakePosition).andThen(new WaitUntilCommand(() -> m_armSubsystem.atSetpoint()))
+        .andThen(new InstantCommand(m_wristSubsystem::intakePosition));
+   } else if (m_operateController.getPOV() == 0) {
+      new InstantCommand(m_armSubsystem::substationIntake).andThen(new WaitUntilCommand(() -> m_armSubsystem.atSetpoint()))
+        .andThen(m_wristSubsystem::setHorizontal);
+   }
+
+   if (m_operateController.getLeftTriggerAxis() > 0.5) {
+    m_mandibleSubsystem.intake();
+   } else {
+    m_mandibleSubsystem.intakeHold();
+   }
+
    
   }
 
@@ -62,6 +77,7 @@ public class intakeControl extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    m_armSubsystem.matchStow();
     m_wristSubsystem.matchStow();
     m_telescopingSubsystem.matchStow();
     m_mandibleSubsystem.intakeHold();
@@ -70,6 +86,6 @@ public class intakeControl extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return m_operateController.getBButtonPressed();
+    return (m_operateController.getPOV() == 180);
   }
 }

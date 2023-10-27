@@ -4,9 +4,15 @@
 
 package frc.robot.commands;
 
+import java.time.Instant;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.armConstants;
 import frc.robot.Constants.telescopingConstant;
 import frc.robot.Constants.wristConstants;
@@ -54,6 +60,7 @@ public class deployControl extends CommandBase{
     this.m_operateController = m_OperateController;
 
     addRequirements(m_wristSubsystem, m_armSubsystem, m_telescopingSubsystem, m_mandibleSubsystem);
+
   }
 
   // Called when the command is initially scheduled.
@@ -69,14 +76,41 @@ public class deployControl extends CommandBase{
   @Override
   public void execute() {
 
+    if(m_operateController.getRightBumperPressed()) {
+      deployHeightUp();
+    }
+
+    if(m_operateController.getLeftBumperPressed()) {
+      deployheightDown();
+    }
+
+    if(m_operateController.getXButtonPressed()) {
+      selectCubes();
+    }
+
+    if(m_operateController.getYButtonPressed()) {
+      selectCones();
+    }
+
     if(m_coneDeploy == true) {
       activeGamepiece = "CONE";
     } else {
       activeGamepiece = "CUBE";
     }
 
+      if(m_operateController.getAButtonPressed()) {
       deploySelect(m_deployHeight, m_coneDeploy);
-    
+      }
+
+      if ((m_operateController.getRightTriggerAxis() > 0.5) && m_coneDeploy == true) {
+        new InstantCommand(m_armSubsystem::scoreCone).andThen(new WaitUntilCommand(() -> m_armSubsystem.atSetpoint()))
+          .andThen(new InstantCommand(m_mandibleSubsystem::shootHalf))
+            .alongWith(new InstantCommand(m_telescopingSubsystem::scoreCone));
+      } else if (m_operateController.getRightTriggerAxis() > 0.5) {
+        new InstantCommand(m_mandibleSubsystem::shootHalf);
+      } else {
+        new InstantCommand(m_mandibleSubsystem::stopMotors);
+      }
   }
 
   public void deploySelect(int deployHeight, boolean coneDeploy) {
@@ -138,6 +172,7 @@ public class deployControl extends CommandBase{
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    m_armSubsystem.matchStow();
     m_wristSubsystem.matchStow();
     m_telescopingSubsystem.matchStow();
     m_mandibleSubsystem.intakeHold();

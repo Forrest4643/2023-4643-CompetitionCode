@@ -10,6 +10,8 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.telescopingConstant;
@@ -56,9 +58,9 @@ public class TelescopingSubsystem extends SubsystemBase{
     return m_telescopingEncoder.getPosition();
   }
 
-  public void setTelescopingReference(double referenceDEG) {
-    m_telescopingController.setReference(referenceDEG, ControlType.kPosition);
-    m_telescopingReference = referenceDEG;
+  public void setTelescopingReference(double referenceIN) {
+    m_telescopingController.setReference(MathUtil.clamp(referenceIN, telescopingConstant.kMinPositionIN, telescopingConstant.kMaxPositionIN), ControlType.kPosition);
+    m_telescopingReference = referenceIN;
   }
 
   public boolean atSetpoint() {
@@ -71,5 +73,9 @@ public class TelescopingSubsystem extends SubsystemBase{
 
   public void intakePosition() {
     setTelescopingReference(5);
+  }
+
+  public void scoreCone() {
+    setTelescopingReference(m_telescopingReference - 5);
   }
 }

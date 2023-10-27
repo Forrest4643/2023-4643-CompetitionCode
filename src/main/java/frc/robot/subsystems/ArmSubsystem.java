@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
@@ -125,6 +127,10 @@ public class ArmSubsystem extends SubsystemBase {
   public boolean atSetpoint() {
     return Math.abs(-armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
   }
+
+  public BooleanSupplier atSetpointSupplier() {
+    return () -> atSetpoint();
+  }
   
   public void setArmReferenceDEG(double referenceDEG) {
     m_armReferencePointDEG = referenceDEG;
@@ -189,6 +195,10 @@ public class ArmSubsystem extends SubsystemBase {
 
   public void stopArmMotor() {
     m_armMotor.disable();
+  }
+
+  public void scoreCone() {
+    setArmReferenceDEG(m_armReferencePointDEG - 5);
   }
 
   //this runs periodically while robot is disabled

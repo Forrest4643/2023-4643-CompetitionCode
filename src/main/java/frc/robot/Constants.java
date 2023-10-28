@@ -86,7 +86,7 @@ public class Constants {
 
         public static final double kSubstationPos = 0;
 
-        public static final double kMaxPositionIN = 12.5;
+        public static final double kMaxPositionIN = 11.5;
         public static final double kMinPositionIN = 0;
 
 

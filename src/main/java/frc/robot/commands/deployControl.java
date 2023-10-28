@@ -8,6 +8,7 @@ import java.time.Instant;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -111,6 +112,8 @@ public class deployControl extends CommandBase{
       } else {
         new InstantCommand(m_mandibleSubsystem::stopMotors);
       }
+
+      SmartDashboard.putNumber("DeployHeight 0-2", m_deployHeight);
   }
 
   public void deploySelect(int deployHeight, boolean coneDeploy) {
@@ -155,11 +158,11 @@ public class deployControl extends CommandBase{
     } }
   }
     public void deployHeightUp() {
-      m_deployHeight = MathUtil.clamp(m_deployHeight - 1, 0, 2);
+      m_deployHeight = MathUtil.clamp(m_deployHeight + 1, 0, 2);
     }
 
     public void deployheightDown() {
-      m_deployHeight = MathUtil.clamp(m_deployHeight + 1, 0, 2);
+      m_deployHeight = MathUtil.clamp(m_deployHeight - 1, 0, 2);
     }
 
     public void selectCones() {

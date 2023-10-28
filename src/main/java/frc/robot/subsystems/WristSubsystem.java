@@ -25,7 +25,7 @@ public class WristSubsystem extends SubsystemBase {
   private double m_kI = 0.0;
   private double m_kD = 0.001;
 
-  private static final double m_wristOffsetDEG = 115;
+  private static final double m_wristOffsetDEG = 0;
 
   private double allowedErrorDEG = 7;
 
@@ -59,7 +59,7 @@ public class WristSubsystem extends SubsystemBase {
 
     m_wristEncoder.setPositionConversionFactor(367.34);
 
-    m_wristEncoder.setZeroOffset(219); 
+    m_wristEncoder.setZeroOffset(255); 
 
     m_wristController.setFeedbackDevice(m_wristEncoder);
 

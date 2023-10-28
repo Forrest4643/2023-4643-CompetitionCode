@@ -95,57 +95,57 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Operator controls
 
-    new JoystickButton(m_operateController, XboxController.Button.kB.value).onTrue(
-        new SequentialCommandGroup(
-          new InstantCommand(m_telescopingSubsystem::matchStow),
-          new WaitUntilCommand(m_telescopingSubsystem::atSetpoint),
-          new InstantCommand(m_wristSubsystem::matchStow),
-          new WaitUntilCommand(m_wristSubsystem::atSetpoint),
-          new InstantCommand(m_wristSubsystem::matchStow)));
+    // new JoystickButton(m_operateController, XboxController.Button.kB.value).onTrue(
+    //     new SequentialCommandGroup(
+    //       new InstantCommand(m_telescopingSubsystem::matchStow),
+    //       new WaitUntilCommand(m_telescopingSubsystem::atSetpoint),
+    //       new InstantCommand(m_wristSubsystem::matchStow),
+    //       new WaitUntilCommand(m_wristSubsystem::atSetpoint),
+    //       new InstantCommand(m_wristSubsystem::matchStow)));
 
-    new JoystickButton(m_operateController, XboxController.Button.kA.value).and(coneTrigger)
-        .onTrue(new SequentialCommandGroup(
-            new InstantCommand(m_armSubsystem::lowCone),
-            new WaitUntilCommand(m_armSubsystem::atSetpoint),
-            new InstantCommand(m_wristSubsystem::lowCone),
-            new WaitUntilCommand(m_wristSubsystem::atSetpoint),
-            new InstantCommand(m_telescopingSubsystem::lowCone)));
+    // new JoystickButton(m_operateController, XboxController.Button.kA.value).and(coneTrigger)
+    //     .onTrue(new SequentialCommandGroup(
+    //         new InstantCommand(m_armSubsystem::lowCone),
+    //         new WaitUntilCommand(m_armSubsystem::atSetpoint),
+    //         new InstantCommand(m_wristSubsystem::lowCone),
+    //         new WaitUntilCommand(m_wristSubsystem::atSetpoint),
+    //         new InstantCommand(m_telescopingSubsystem::lowCone)));
 
-    new JoystickButton(m_operateController, XboxController.Button.kX.value).and(coneTrigger)
-        .onTrue(new SequentialCommandGroup(
-            new InstantCommand(m_armSubsystem::midCone),
-            new WaitUntilCommand(m_armSubsystem::atSetpoint),
-            new InstantCommand(m_wristSubsystem::midCone),
-            new WaitUntilCommand(m_wristSubsystem::atSetpoint),
-            new InstantCommand(m_telescopingSubsystem::midCone)));
+    // new JoystickButton(m_operateController, XboxController.Button.kX.value).and(coneTrigger)
+    //     .onTrue(new SequentialCommandGroup(
+    //         new InstantCommand(m_armSubsystem::midCone),
+    //         new WaitUntilCommand(m_armSubsystem::atSetpoint),
+    //         new InstantCommand(m_wristSubsystem::midCone),
+    //         new WaitUntilCommand(m_wristSubsystem::atSetpoint),
+    //         new InstantCommand(m_telescopingSubsystem::midCone)));
 
-    new JoystickButton(m_operateController, XboxController.Button.kA.value).and(cubeTrigger)
-        .onTrue(new SequentialCommandGroup(
-            new InstantCommand(m_armSubsystem::lowCube),
-            new WaitUntilCommand(m_armSubsystem::atSetpoint),
-            new InstantCommand(m_wristSubsystem::lowCube),
-            new WaitUntilCommand(m_wristSubsystem::atSetpoint),
-            new InstantCommand(m_telescopingSubsystem::lowCube)));
+    // new JoystickButton(m_operateController, XboxController.Button.kA.value).and(cubeTrigger)
+    //     .onTrue(new SequentialCommandGroup(
+    //         new InstantCommand(m_armSubsystem::lowCube),
+    //         new WaitUntilCommand(m_armSubsystem::atSetpoint),
+    //         new InstantCommand(m_wristSubsystem::lowCube),
+    //         new WaitUntilCommand(m_wristSubsystem::atSetpoint),
+    //         new InstantCommand(m_telescopingSubsystem::lowCube)));
 
-    new JoystickButton(m_operateController, XboxController.Button.kX.value).and(cubeTrigger)
-        .onTrue(new SequentialCommandGroup(
-            new InstantCommand(m_armSubsystem::midCube),
-            new WaitUntilCommand(m_armSubsystem::atSetpoint),
-            new InstantCommand(m_wristSubsystem::midCube),
-            new WaitUntilCommand(m_wristSubsystem::atSetpoint),
-            new InstantCommand(m_telescopingSubsystem::midCube)));
+    // new JoystickButton(m_operateController, XboxController.Button.kX.value).and(cubeTrigger)
+    //     .onTrue(new SequentialCommandGroup(
+    //         new InstantCommand(m_armSubsystem::midCube),
+    //         new WaitUntilCommand(m_armSubsystem::atSetpoint),
+    //         new InstantCommand(m_wristSubsystem::midCube),
+    //         new WaitUntilCommand(m_wristSubsystem::atSetpoint),
+    //         new InstantCommand(m_telescopingSubsystem::midCube)));
 
-    new JoystickButton(m_operateController, XboxController.Button.kY.value).and(cubeTrigger)
-        .onTrue(new SequentialCommandGroup(
-            new InstantCommand(m_armSubsystem::highCube),
-            new WaitUntilCommand(m_armSubsystem::atSetpoint),
-            new InstantCommand(m_wristSubsystem::highCube),
-            new WaitUntilCommand(m_wristSubsystem::atSetpoint),
-            new InstantCommand(m_telescopingSubsystem::highCube)));
+    // new JoystickButton(m_operateController, XboxController.Button.kY.value).and(cubeTrigger)
+    //     .onTrue(new SequentialCommandGroup(
+    //         new InstantCommand(m_armSubsystem::highCube),
+    //         new WaitUntilCommand(m_armSubsystem::atSetpoint),
+    //         new InstantCommand(m_wristSubsystem::highCube),
+    //         new WaitUntilCommand(m_wristSubsystem::atSetpoint),
+    //         new InstantCommand(m_telescopingSubsystem::highCube)));
 
-    intakeTrigger.onTrue(new InstantCommand(m_mandibleSubsystem::intakeAtSpeed));
+    // intakeTrigger.onTrue(new InstantCommand(m_mandibleSubsystem::intakeAtSpeed));
 
-    deployTrigger.onTrue(new InstantCommand(m_mandibleSubsystem::shootHalf)); 
+    // deployTrigger.onTrue(new InstantCommand(m_mandibleSubsystem::shootHalf)); 
 
     
 

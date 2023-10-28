@@ -21,17 +21,17 @@ public class WristSubsystem extends SubsystemBase {
 
   private ArmSubsystem m_armSubsystem;
  
-  private double m_kP = 0.004;
-  private double m_kI = 0.0;
-  private double m_kD = 0.001;
+  private double m_kP = 0.001;
+  private double m_kI = 0.00;
+  private double m_kD = 0.0;
 
-  private static final double m_wristOffsetDEG = 0;
+  private static final double m_wristOffsetDEG = 135;
 
   private double allowedErrorDEG = 7;
 
   private double m_wristReferencePointDEG = 0;
 
-  private double m_kG = 0.1;
+  private double m_kG = 3;
 
   private double m_iZone = 1;
 
@@ -59,7 +59,9 @@ public class WristSubsystem extends SubsystemBase {
 
     m_wristEncoder.setPositionConversionFactor(367.34);
 
-    m_wristEncoder.setZeroOffset(255); 
+    m_wristEncoder.setInverted(true);
+
+    m_wristEncoder.setZeroOffset(337.2493328); 
 
     m_wristController.setFeedbackDevice(m_wristEncoder);
 
@@ -73,7 +75,7 @@ public class WristSubsystem extends SubsystemBase {
 
     m_wristMotor.setSmartCurrentLimit(m_currentLimit);
 
-    m_wristMotor.setInverted(false);
+    m_wristMotor.setInverted(true);
 
     m_wristMotor.burnFlash();
 
@@ -88,7 +90,7 @@ public class WristSubsystem extends SubsystemBase {
   }
 
   public double getWristPosition() {
-    return -m_wristEncoder.getPosition() + m_wristOffsetDEG;
+    return m_wristEncoder.getPosition() + m_wristOffsetDEG;
   }
 
   public boolean atSetpoint() {
@@ -97,7 +99,7 @@ public class WristSubsystem extends SubsystemBase {
 
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
-    m_wristController.setReference((-m_wristReferencePointDEG) + m_wristOffsetDEG, ControlType.kSmartMotion,
+    m_wristController.setReference((m_wristReferencePointDEG) - m_wristOffsetDEG, ControlType.kSmartMotion,
      0, m_wristFF.calculate(Units.degreesToRadians(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition()), 0)); //TODO is encoder noise causing wrist oscillations? 
   }
  

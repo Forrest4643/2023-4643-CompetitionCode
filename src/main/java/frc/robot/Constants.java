@@ -19,10 +19,10 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class Constants {
     public static class driveConstants{
-        public static final int kLeftFrontID = 1;
-        public static final int kLeftRearID = 2;
-        public static final int kRightFrontID = 4;
-        public static final int kRightRearID = 3;   
+        public static final int kLeftFrontID = 4;
+        public static final int kLeftRearID = 3;
+        public static final int kRightFrontID = 1;
+        public static final int kRightRearID = 2;   
         public static final double kInputDeadband = 0.08;
 
         private static final Translation2d kFrontLeftWheelMeters = new Translation2d(0.302578, 0.254000);
@@ -103,20 +103,20 @@ public class Constants {
         public static final double kMaxVelocityMeters = 0;
         public static final double kMaxAccelMeter = 0;
 
-        public static final double kUnStow = -90;
-        public static final double kHoldForUnstow = 75;
-        public static final double kMatchStow = -90;
+        public static final double kUnStow = 90;
+        public static final double kHoldForUnstow = -75;
+        public static final double kMatchStow = 90;
         public static final double kHorizontal = 0;
         public static final double kIntake = 0;
 
-        public static final double kScoreLowCubePos = -40;
-        public static final double kScoreMidCubePos = -15;
-        public static final double kScoreHighCubePos = -15;
+        public static final double kScoreLowCubePos = 40;
+        public static final double kScoreMidCubePos = 15;
+        public static final double kScoreHighCubePos = 15;
 
-        public static final double kScoreLowConePos = -40;
-        public static final double kScoreMidConePos = -45;
+        public static final double kScoreLowConePos = 40;
+        public static final double kScoreMidConePos = 45;
 
-        public static final double kSubstationPos = 15;
+        public static final double kSubstationPos = -15;
 
         public static final double kWristMinPositionDEG = -120;
         public static final double kWristMaxPositionDEG = 120;

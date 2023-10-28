@@ -12,6 +12,7 @@ import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxAlternateEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
@@ -39,22 +40,18 @@ public class ArmSubsystem extends SubsystemBase {
 
   private SparkMaxPIDController m_armController = m_armMotor.getPIDController();
 
-  private ArmFeedforward m_armFeedforward; 
-
-  private double m_kP = 0.004; 
+  private double m_kP = 0.005; 
 
   private double m_kI = 0.0;
  
-  private double m_kD = 0.001;
+  private double m_kD = 0.003;
 
   private double m_kF = 0.0;
 
   private double m_kG;
 
-  private double m_kGmin = 0.9; //kG when telescoping is retracted
-  private double m_kGmax = 1.5; //kG wgeb telescoping is extended
-
-  private double m_kGmultiplier = m_kGmax / m_kGmin; //retracted kG over extended kG
+  double m_kGmin = 0.3; //kG when telescoping is retracted
+  double m_kGmax = 1.0; //kG wgeb telescoping is extended
 
   private static double m_armEncoderOffset = -80;
 
@@ -70,7 +67,8 @@ public class ArmSubsystem extends SubsystemBase {
   //alternate thru bore: 123.75
   m_armMotorEncoder.setPositionConversionFactor(123.75);
   m_armMotorEncoder.setInverted(true);
-  m_armMotor.setInverted(false);
+  m_armMotor.setInverted(true);
+  m_armMotor.setIdleMode(IdleMode.kCoast);
 
   m_armMotor.setSmartCurrentLimit(45);
 
@@ -101,6 +99,8 @@ public class ArmSubsystem extends SubsystemBase {
 
   m_armController.setIZone(3, 0);
 
+  ArmFeedforward m_armFeedforward;
+
   m_armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
   m_armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
@@ -117,29 +117,31 @@ public class ArmSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("armEncoderPosition", armEncoderPosition());
     SmartDashboard.putNumber("armSetpoint", m_armReferencePointDEG);
     SmartDashboard.putBoolean("armAtSetpoint?", atSetpoint());
+    SmartDashboard.putNumber("arm_kG voltage", m_kG);
+
+    arbFFVoltsCalculate();
   }
 
   public void setArmReferenceDEG(double referenceDEG) {
     m_armReferencePointDEG = referenceDEG;
     m_armController.setReference(m_armReferencePointDEG - m_armEncoderOffset, ControlType.kSmartMotion, 0, 
-      arbFFVolts());
+      m_kG);
   }
 
   public double armEncoderPosition() {
-    return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
+    return (m_armMotorEncoder.getPosition() + m_armEncoderOffset);
   }
 
   public boolean atSetpoint() {
     return Math.abs(-armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
   }
 
-  public double arbFFVolts() {
+  public double arbFFVoltsCalculate() {
 
     m_kG = ((m_kGmax-m_kGmin) / telescopingConstant.kMaxPositionIN) + m_kGmin;
    
-   m_armFeedforward = new ArmFeedforward(0, m_kG, 0);
-
-   return m_armFeedforward.calculate(Units.degreesToRadians(armEncoderPosition()), 0);
+   return new ArmFeedforward(0, m_kG, 0)
+    .calculate(Units.degreesToRadians(armEncoderPosition()), 0);
   }
 
   public void unStow1() {
@@ -206,8 +208,8 @@ public class ArmSubsystem extends SubsystemBase {
     m_kP = SmartDashboard.getNumber("Arm_kP", m_kP);
     m_kI = SmartDashboard.getNumber("Arm_kI", m_kI);
     m_kD = SmartDashboard.getNumber("Arm_kD", m_kD);
-    m_kGmin = SmartDashboard.getNumber("Arm_kG", m_kGmin);
-    m_kGmax = SmartDashboard.getNumber("Arm_kG", m_kGmax);
+    m_kGmin = SmartDashboard.getNumber("Arm_kG_MIN", m_kGmin);
+    m_kGmax = SmartDashboard.getNumber("Arm_kG_MAX", m_kGmax);
 
     double sumValuesAfter = m_kP+m_kI+m_kD+m_kGmin+m_kGmax;
 

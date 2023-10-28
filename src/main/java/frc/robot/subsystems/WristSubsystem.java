@@ -102,25 +102,49 @@ public class WristSubsystem extends SubsystemBase {
   }
  
   public void unStow() {
-    setWristReference(-90);
+    setWristReference(wristConstants.kUnStow);
   }
 
   public void holdForUnstow() {
-    setWristReference(75);
+    setWristReference(wristConstants.kHoldForUnstow);
   }
 
   public void matchStow() {
-    setWristReference(-90);
+    setWristReference(wristConstants.kMatchStow);
   }
 
   public void intakePosition() {
-    setWristReference(0);
+    setWristReference(wristConstants.kIntake);
   }
 
-  public void setHorizontal() {
-    setWristReference(0);
+  public void Horizontal() {
+    setWristReference(wristConstants.kHorizontal);
   }
 
+  public void lowCube() {
+    setWristReference(wristConstants.kScoreLowCubePos);
+  }
+
+  public void midCube() {
+    setWristReference(wristConstants.kScoreMidCubePos);
+  }
+
+  public void highCube() {
+    setWristReference(wristConstants.kScoreHighCubePos);
+  }
+
+  public void lowCone() {
+    setWristReference(wristConstants.kScoreLowConePos);
+  }
+
+  public void midCone() {
+    setWristReference(wristConstants.kScoreMidConePos);
+  }
+
+  public void substationIntake() {
+    setWristReference(wristConstants.kSubstationPos);
+  }
+  
   public void updateWristSmartDashValues() {
     //updates PIDG values to what is on the smartdashboard 
     double sumValuesBefore = m_kP+m_kI+m_kD+m_kG+m_iZone;

@@ -113,80 +113,77 @@ public class ArmSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-   
+    SmartDashboard.putNumber("armRawPosition", m_armMotorEncoder.getPosition());
     SmartDashboard.putNumber("armEncoderPosition", armEncoderPosition());
     SmartDashboard.putNumber("armSetpoint", m_armReferencePointDEG);
     SmartDashboard.putBoolean("armAtSetpoint?", atSetpoint());
+  }
 
-    
+  public void setArmReferenceDEG(double referenceDEG) {
+    m_armReferencePointDEG = referenceDEG;
+    m_armController.setReference(m_armReferencePointDEG - m_armEncoderOffset, ControlType.kSmartMotion, 0, 
+      arbFFVolts());
+  }
 
-    //System.out.println("Arm Reported Position:" + m_armMotorEncoder.getPosition());
-
+  public double armEncoderPosition() {
+    return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
   }
 
   public boolean atSetpoint() {
     return Math.abs(-armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
   }
 
-  public BooleanSupplier atSetpointSupplier() {
-    return () -> atSetpoint();
-  }
-  
-  public void setArmReferenceDEG(double referenceDEG) {
-    m_armReferencePointDEG = referenceDEG;
-    m_armController.setReference(m_armReferencePointDEG - m_armEncoderOffset, ControlType.kSmartMotion, 0, 
-      arbFFVolts());
-    System.out.println("Arm Reference Updated! ReferenceDEG:" + m_armReferencePointDEG);
+  public double arbFFVolts() {
+
+    m_kG = ((m_kGmax-m_kGmin) / telescopingConstant.kMaxPositionIN) + m_kGmin;
+   
+   m_armFeedforward = new ArmFeedforward(0, m_kG, 0);
+
+   return m_armFeedforward.calculate(Units.degreesToRadians(armEncoderPosition()), 0);
   }
 
   public void unStow1() {
-    setArmReferenceDEG(-20);
-    System.out.println("unStow1!");
+    setArmReferenceDEG(armConstants.kUnStow1);
   }
 
   public void unStow2() {
-    setArmReferenceDEG(-80);
-    System.out.println("unStow2!");
-
+    setArmReferenceDEG(armConstants.kUnStow2);
   }
 
   public void matchStow() {
-    setArmReferenceDEG(-70);
-    System.out.println("matchStow!");
+    setArmReferenceDEG(armConstants.kMatchStow);
   }
 
   public void intakePosition() {
-    setArmReferenceDEG(-35);
+    setArmReferenceDEG(armConstants.kIntake);
   }
 
   public void armHorizontal() {
-    setArmReferenceDEG(0);;
-    System.out.println("armHorizontal!");
+    setArmReferenceDEG(armConstants.kHorizontal);;
   }
 
   public void substationIntake() {
     setArmReferenceDEG(armConstants.kSubstationPos);
   } 
 
-  public double armEncoderPosition() {
-    return (-m_armMotorEncoder.getPosition() - m_armEncoderOffset);
+  public void lowCube() {
+    setArmReferenceDEG(armConstants.kScoreLowCube);
   }
 
-  public double arbFFVolts() {
-
-    m_kG = ((MathUtil.clamp(m_telescopingSubsystem.telescopingPosIN(), 1, telescopingConstant.kMaxPositionIN)
-    / telescopingConstant.kMaxPositionIN)
-    * m_kGmultiplier);
-   
-   m_armFeedforward = new ArmFeedforward(0, m_kG, 0);
-
-   return m_armFeedforward.calculate(Units.degreesToRadians(m_armReferencePointDEG), 0);
+  public void midCube() {
+    setArmReferenceDEG(armConstants.kScoreMidCube);
   }
 
-  public void setArbFF() {
-   setArmVolts(arbFFVolts());
-   System.out.println("volts:"+arbFFVolts());
-   System.out.println("armPosition:"+armEncoderPosition());
+  public void highCube() {
+    setArmReferenceDEG(armConstants.kScoreHighCube);
+  }
+
+  public void lowCone() {
+    setArmReferenceDEG(armConstants.kScoreLowCone);
+  }
+
+  public void midCone() {
+    setArmReferenceDEG(armConstants.kScoreMidCone);
   }
 
   public void setArmVolts(double volts) {

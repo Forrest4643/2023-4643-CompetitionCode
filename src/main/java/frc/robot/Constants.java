@@ -61,12 +61,18 @@ public class Constants {
         public static final double kMaxVelocityDegSec = 90;
         public static final double kMaxAccelDegSec = 45;
 
-        public static final double kScoreLowCubePos = -45;
-        public static final double kScoreMidCubePos = -10;
-        public static final double kScoreHighCubePos = 10;
+        public static final double kUnStow1 = -20;
+        public static final double kUnStow2 = -80;
+        public static final double kMatchStow = -70;
+        public static final double kIntake = -35;
+        public static final double kHorizontal = 0;
 
-        public static final double kScoreLowConePos = -60;
-        public static final double kScoreMidConePos = -3;
+        public static final double kScoreLowCube = -45;
+        public static final double kScoreMidCube = -10;
+        public static final double kScoreHighCube = 10;
+
+        public static final double kScoreLowCone = -60;
+        public static final double kScoreMidCone = -3;
      
         public static final double kSubstationPos = 15;
 
@@ -75,16 +81,16 @@ public class Constants {
     public static final class telescopingConstant {
         public static final int kTeleID = 6;
 
-        public static final double kScoreLowCubePos = 0;
-        public static final double kScoreMidCubePos = 6;
-        public static final double kScoreHighCubePos = 12.5;
+        public static final double kScoreLowCube = 0;
+        public static final double kScoreMidCube = 6;
+        public static final double kScoreHighCube = 12.5;
 
-        public static final double kScoreLowConePos = 0;
-        public static final double kScoreMidConePos = 4;
+        public static final double kScoreLowCone = 0;
+        public static final double kScoreMidCone = 4;
 
-        public static final double kStowPos = 0;
+        public static final double kStow = 0;
 
-        public static final double kSubstationPos = 0;
+        public static final double kSubstation = 0;
 
         public static final double kMaxPositionIN = 11.5;
         public static final double kMinPositionIN = 0;
@@ -96,6 +102,12 @@ public class Constants {
         public static final int kWristID = 7;
         public static final double kMaxVelocityMeters = 0;
         public static final double kMaxAccelMeter = 0;
+
+        public static final double kUnStow = -90;
+        public static final double kHoldForUnstow = 75;
+        public static final double kMatchStow = -90;
+        public static final double kHorizontal = 0;
+        public static final double kIntake = 0;
 
         public static final double kScoreLowCubePos = -40;
         public static final double kScoreMidCubePos = -15;

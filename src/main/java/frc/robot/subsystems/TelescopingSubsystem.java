@@ -75,7 +75,32 @@ public class TelescopingSubsystem extends SubsystemBase{
     setTelescopingReference(5);
   }
 
+  public void substationIntake() {
+    setTelescopingReference(telescopingConstant.kSubstation);
+  }
+
   public void scoreCone() {
     setTelescopingReference(m_telescopingReference - 5);
   }
+
+  public void lowCube() {
+    setTelescopingReference(telescopingConstant.kScoreLowCube);
+  }
+
+  public void midCube() {
+    setTelescopingReference(telescopingConstant.kScoreMidCube);
+  }
+
+  public void highCube() {
+    setTelescopingReference(telescopingConstant.kScoreHighCube);
+  }
+
+  public void lowCone() {
+    setTelescopingReference(telescopingConstant.kScoreLowCone);
+  }
+
+  public void midCone() {
+    setTelescopingReference(telescopingConstant.kScoreMidCone);
+  }
+
 }

@@ -25,7 +25,7 @@ public class WristSubsystem extends SubsystemBase {
   private double m_kI = 0.00;
   private double m_kD = 0.0;
 
-  private static final double m_wristOffsetDEG = 135;
+  private static final double m_wristOffsetDEG = -225;
 
   private double allowedErrorDEG = 7;
 
@@ -53,15 +53,15 @@ public class WristSubsystem extends SubsystemBase {
 
     SmartDashboard.putNumber("Wrist_kP", m_kP);
     SmartDashboard.putNumber("Wrist_kI", m_kI);
-    SmartDashboard.putNumber("wrist_kD", m_kD);
-    SmartDashboard.putNumber("wrist_kG", m_kG);
-    SmartDashboard.putNumber("wrist_iZone", m_iZone);
+    SmartDashboard.putNumber("Wrist_kD", m_kD);
+    SmartDashboard.putNumber("Wrist_kG", m_kG);
+    SmartDashboard.putNumber("Wrist_iZone", m_iZone);
 
-    m_wristEncoder.setPositionConversionFactor(367.34);
+    m_wristEncoder.setPositionConversionFactor(360);
 
-    m_wristEncoder.setInverted(true);
+    m_wristEncoder.setInverted(false);
 
-    m_wristEncoder.setZeroOffset(337.2493328); 
+    m_wristEncoder.setZeroOffset(28); 
 
     m_wristController.setFeedbackDevice(m_wristEncoder);
 
@@ -78,7 +78,6 @@ public class WristSubsystem extends SubsystemBase {
     m_wristMotor.setInverted(true);
 
     m_wristMotor.burnFlash();
-
   }
 
   @Override
@@ -86,6 +85,8 @@ public class WristSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("wristPosition:", getWristPosition());
     SmartDashboard.putBoolean("wristAtSetpoint?", atSetpoint());
     SmartDashboard.putNumber("wristSetpoint", m_wristReferencePointDEG);
+    SmartDashboard.putNumber("absWristPos", absWristPositionDEG());
+
     
   }
 
@@ -93,14 +94,20 @@ public class WristSubsystem extends SubsystemBase {
     return m_wristEncoder.getPosition() + m_wristOffsetDEG;
   }
 
+  public double absWristPositionDEG() {
+    return (getWristPosition() + m_armSubsystem.armEncoderPosition());
+  }
+
+  
+
   public boolean atSetpoint() {
     return Math.abs(getWristPosition() - m_wristReferencePointDEG) < allowedErrorDEG;
   }
 
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
-    m_wristController.setReference((m_wristReferencePointDEG) - m_wristOffsetDEG, ControlType.kSmartMotion,
-     0, m_wristFF.calculate(Units.degreesToRadians(m_wristReferencePointDEG + m_armSubsystem.armEncoderPosition()), 0)); //TODO is encoder noise causing wrist oscillations? 
+    m_wristController.setReference((m_wristReferencePointDEG - m_wristOffsetDEG), ControlType.kSmartMotion,
+     0, m_wristFF.calculate(Units.degreesToRadians(absWristPositionDEG()), 0)); 
   }
  
   public void unStow() {
@@ -153,9 +160,9 @@ public class WristSubsystem extends SubsystemBase {
 
     m_kP = SmartDashboard.getNumber("Wrist_kP", m_kP);
     m_kI = SmartDashboard.getNumber("Wrist_kI", m_kI);
-    m_kD = SmartDashboard.getNumber("wrist_kD", m_kD);
-    m_kG = SmartDashboard.getNumber("wrist_kG", m_kG);
-    m_iZone = SmartDashboard.getNumber("wrist_iZone", m_iZone);
+    m_kD = SmartDashboard.getNumber("Wrist_kD", m_kD);
+    m_kG = SmartDashboard.getNumber("Wrist_kG", m_kG);
+    m_iZone = SmartDashboard.getNumber("Wrist_iZone", m_iZone);
 
     double sumValuesAfter = m_kP+m_kI+m_kD+m_kG+m_iZone;
 
@@ -165,6 +172,7 @@ public class WristSubsystem extends SubsystemBase {
     m_wristController.setP(m_kP);
     m_wristController.setI(m_kI);
     m_wristController.setD(m_kD);
+
 
     System.out.println("WRIST PID UPDATED!"+"kP="+m_kP+"kI="+m_kI+"kD="+m_kD+"kG="+m_kG+"iZone="+m_iZone);
     }

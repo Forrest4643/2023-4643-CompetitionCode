@@ -104,7 +104,7 @@ public class Constants {
         public static final double kMaxAccelMeter = 0;
 
         public static final double kUnStow = 90;
-        public static final double kHoldForUnstow = -75;
+        public static final double kHoldForUnstow = -80;
         public static final double kMatchStow = 90;
         public static final double kHorizontal = 0;
         public static final double kIntake = 0;

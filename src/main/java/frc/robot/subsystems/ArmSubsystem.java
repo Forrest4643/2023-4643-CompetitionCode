@@ -99,8 +99,6 @@ public class ArmSubsystem extends SubsystemBase {
 
   m_armController.setIZone(3, 0);
 
-  ArmFeedforward m_armFeedforward;
-
   m_armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
   m_armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
@@ -120,6 +118,10 @@ public class ArmSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("arm_kG voltage", m_kG);
 
     arbFFVoltsCalculate();
+  }
+
+  public double armReferenceDEG() {
+    return m_armReferencePointDEG;
   }
 
   public void setArmReferenceDEG(double referenceDEG) {
@@ -210,6 +212,7 @@ public class ArmSubsystem extends SubsystemBase {
     m_kD = SmartDashboard.getNumber("Arm_kD", m_kD);
     m_kGmin = SmartDashboard.getNumber("Arm_kG_MIN", m_kGmin);
     m_kGmax = SmartDashboard.getNumber("Arm_kG_MAX", m_kGmax);
+    
 
     double sumValuesAfter = m_kP+m_kI+m_kD+m_kGmin+m_kGmax;
 

@@ -99,6 +99,8 @@ public class ArmSubsystem extends SubsystemBase {
 
   m_armController.setIZone(3, 0);
 
+  m_armMotor.enableVoltageCompensation(12);
+
   m_armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
   m_armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
@@ -135,7 +137,7 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public boolean atSetpoint() {
-    return Math.abs(-armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
+    return Math.abs(armEncoderPosition() - m_armReferencePointDEG) < allowedErrorDEG;
   }
 
   public double arbFFVoltsCalculate() {

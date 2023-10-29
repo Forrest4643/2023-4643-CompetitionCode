@@ -21,7 +21,7 @@ public class WristSubsystem extends SubsystemBase {
 
   private ArmSubsystem m_armSubsystem;
  
-  private double m_kP = 0.001;
+  private double m_kP = 0.003;
   private double m_kI = 0.00;
   private double m_kD = 0.0;
 
@@ -31,7 +31,7 @@ public class WristSubsystem extends SubsystemBase {
 
   private double m_wristReferencePointDEG = 0;
 
-  private double m_kG = 3;
+  private double m_kG = 0.4;
 
   private double m_iZone = 1;
 
@@ -43,8 +43,6 @@ public class WristSubsystem extends SubsystemBase {
   private final SparkMaxAbsoluteEncoder m_wristEncoder = m_wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
 
   private final SparkMaxPIDController m_wristController = m_wristMotor.getPIDController();
-
-  private ArmFeedforward m_wristFF = new ArmFeedforward(0, m_kG, 0);
 
   /** Creates a new wristSubsystem. */
   public WristSubsystem(ArmSubsystem m_ArmSubsystem) {
@@ -77,7 +75,9 @@ public class WristSubsystem extends SubsystemBase {
 
     m_wristMotor.setInverted(true);
 
-    m_wristMotor.burnFlash();
+    m_wristMotor.enableVoltageCompensation(12);
+
+    //m_wristMotor.burnFlash();
   }
 
   @Override
@@ -85,8 +85,7 @@ public class WristSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("wristPosition:", getWristPosition());
     SmartDashboard.putBoolean("wristAtSetpoint?", atSetpoint());
     SmartDashboard.putNumber("wristSetpoint", m_wristReferencePointDEG);
-    SmartDashboard.putNumber("absWristPos", absWristPositionDEG());
-
+    SmartDashboard.putNumber("wristkGVolts", calculateWristFF());
     
   }
 
@@ -94,8 +93,8 @@ public class WristSubsystem extends SubsystemBase {
     return m_wristEncoder.getPosition() + m_wristOffsetDEG;
   }
 
-  public double absWristPositionDEG() {
-    return (getWristPosition() + m_armSubsystem.armEncoderPosition());
+  public double absWristReferenceDEG() {
+    return (m_wristReferencePointDEG + m_armSubsystem.armReferenceDEG());
   }
 
   
@@ -107,7 +106,14 @@ public class WristSubsystem extends SubsystemBase {
   public void setWristReference(double referenceDEG) {
     m_wristReferencePointDEG = referenceDEG;
     m_wristController.setReference((m_wristReferencePointDEG - m_wristOffsetDEG), ControlType.kSmartMotion,
-     0, m_wristFF.calculate(Units.degreesToRadians(absWristPositionDEG()), 0)); 
+     0, calculateWristFF()); 
+     SmartDashboard.putNumber("absWristPos", absWristReferenceDEG());
+
+  }
+
+  public double calculateWristFF() {
+    return new ArmFeedforward(0, m_kG, 0).calculate(
+      Units.degreesToRadians(absWristReferenceDEG()), 0);
   }
  
   public void unStow() {
@@ -172,7 +178,9 @@ public class WristSubsystem extends SubsystemBase {
     m_wristController.setP(m_kP);
     m_wristController.setI(m_kI);
     m_wristController.setD(m_kD);
-
+    //m_wristMotor.burnFlash();
+    
+    System.out.println("Wrist P: " + m_wristController.getP());
 
     System.out.println("WRIST PID UPDATED!"+"kP="+m_kP+"kI="+m_kI+"kD="+m_kD+"kG="+m_kG+"iZone="+m_iZone);
     }

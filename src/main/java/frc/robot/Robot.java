@@ -83,12 +83,14 @@ public class Robot extends TimedRobot {
     m_updateArmSmartDashValues = m_robotContainer.updateArmSmartDashValues;
     
     m_updateWristSmartDashValues = m_robotContainer.updateWristSmartDashValues;
+
+    m_updateArmSmartDashValues.schedule();
+    m_updateWristSmartDashValues.schedule();
   }
 
   @Override
   public void disabledPeriodic() {
-    m_updateArmSmartDashValues.execute();
-    m_updateWristSmartDashValues.execute();
+ 
   }
 
   /**

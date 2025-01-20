@@ -2,14 +2,16 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-//Programmed by Forrest Lasell during the 2022 FRC season for team 4643, Butte Built Bots
+//Programmed by Forrest Lasell during the 2023 FRC season for team 4643, Butte Built Bots
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 
 
 
@@ -26,9 +28,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;    
 
-  private InstantCommand m_DriveSimStart;
+  private Command m_cartesianMecanumDrive;
 
   private RobotContainer m_robotContainer;
+
+  private RepeatCommand m_updateArmSmartDashValues; 
+
+  private RepeatCommand m_updateWristSmartDashValues;
 
   
 
@@ -43,6 +49,8 @@ public class Robot extends TimedRobot {
     // and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    CameraServer.startAutomaticCapture();
   }
 
   /**
@@ -67,16 +75,22 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-    
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    m_updateArmSmartDashValues = m_robotContainer.updateArmSmartDashValues;
+    
+    m_updateWristSmartDashValues = m_robotContainer.updateWristSmartDashValues;
+
+    m_updateArmSmartDashValues.schedule();
+    m_updateWristSmartDashValues.schedule();
   }
 
   @Override
   public void disabledPeriodic() {
+ 
   }
 
   /**
@@ -85,11 +99,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    //m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+      //m_autonomousCommand.schedule();
     }
   }
 
@@ -108,7 +122,13 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    m_robotContainer.teleInit();
+
+    m_cartesianMecanumDrive = m_robotContainer.m_cartesianMecanumDrive;
+
+    m_robotContainer.unStow().schedule();
+
+    m_cartesianMecanumDrive.schedule();
+    
   }
 
   /** This function is called periodically during operator control. */
@@ -120,19 +140,21 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+
+    
+
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-
+    
   }
 
   /** This function is called once when the robot is first started up. */
   @Override
   public void simulationInit() {
-    m_DriveSimStart = m_robotContainer.DriveSimStart;
-    m_DriveSimStart.schedule();
+  
   }
   /** This function is called periodically whilst in simulation. */
   @Override

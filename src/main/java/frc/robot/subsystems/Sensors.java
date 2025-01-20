@@ -4,99 +4,117 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.Supplier;
+import java.io.IOException;
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.ColorSensorV3;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.SimDouble;
-import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.IndexerConstants;
-import frc.robot.Constants.TurretConstants;
-import edu.wpi.first.wpilibj.I2C;
+import frc.robot.Constants.visionConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.SerialPort;
 
 public class Sensors extends SubsystemBase {
 
   //creating AHRS device "navX"
-  AHRS navX;
+  private AHRS navX;
 
-  //defining onboard I2C port
-  private final I2C.Port i2cPort = I2C.Port.kOnboard;
-  //defining I2C port on NavX
-  private final I2C.Port mXpPorti2c = I2C.Port.kMXP;
-  //defining top and bottom REV V3 color sensors
-  private final ColorSensorV3 m_topV3ColorSensor = new ColorSensorV3(i2cPort);
-  private final ColorSensorV3 m_bottomV3ColorSensor = new ColorSensorV3(mXpPorti2c);
+  //private AHRS armNavX;
 
   //simulated yaw angle, for simulation.
-  SimDouble m_simYawAngle;
+  private SimDouble m_simYawAngle;
 
-  //creating color objects for the top and bottom color sensors
-  Color m_topColor;
+  public AprilTagFieldLayout aprilTagFieldLayout;
 
-  Color m_bottomColor;
+  public PhotonPoseEstimator photonFrontPoseEstimator;
+
+  private double m_fusedHeadingOffset = 0;
+
+  //public PhotonPoseEstimator photonrearPoseEstimator;
+
+  public PhotonCamera frontCamera = new PhotonCamera("frontAprilTagCamera");
 
   /** Creates a new IndexSensors. */
   public Sensors() {
 
-    // instantiate navx over USB
+    // instantiate navx over MXP
     try {
       navX = new AHRS(SerialPort.Port.kMXP);
     } catch (RuntimeException ex) {
-      DriverStation.reportError("Error instantiating navX-USB: " + ex.getMessage(), true);
+      DriverStation.reportError("Error instantiating navX-MXP: " + ex.getMessage(), true);
     }
 
+    // instantiate navx over USB
+    // try {
+    //   armNavX = new AHRS(SerialPort.Port.kUSB);
+    // } catch (RuntimeException ex) {
+    //   DriverStation.reportError("Error instantiating armNavX-USB: " + ex.getMessage(), true);
+    // }
+
+     // sends WPI provided AprilTag locations to the PhotonVision field layout object
+    try {
+      this.aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(
+        AprilTagFields.k2023ChargedUp.m_resourceFile);
+
+      // Construct PhotonPoseEstimator
+      this.photonFrontPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP, 
+      frontCamera, visionConstants.kRobotToFrontCamMeters);
+
+      photonFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
+      
+    } catch (IOException e) {
+      DriverStation.reportError("Error loading AprilTagFieldLayout in Sensors:" + e.getMessage(), true);
+      photonFrontPoseEstimator = null;
+    }
   }
 
   @Override
   public void periodic() {
 
-    m_topColor = m_topV3ColorSensor.getColor();
-
-    m_bottomColor = m_bottomV3ColorSensor.getColor();
-
-    //sending info for debugging to the SmartDashboard
-    SmartDashboard.putNumber("topProx", m_topV3ColorSensor.getProximity());
-
-    SmartDashboard.putNumber("bottomProx", m_bottomV3ColorSensor.getProximity());
-
-    SmartDashboard.putNumber("topRedValue", m_topColor.red);
-    SmartDashboard.putNumber("topBlueValue", m_topColor.blue);
-
-    SmartDashboard.putNumber("bottomRedValue", m_bottomColor.red);
-    SmartDashboard.putNumber("bottomBlueValue", m_bottomColor.blue);
-
-    SmartDashboard.putNumber("Yaw", navXYaw());
-    SmartDashboard.putNumber("Pitch", navXPitch());
-    SmartDashboard.putNumber("Roll", navXRoll());
-
   }
 
   @Override
   public void simulationPeriodic() {
-    //getting simulated device handle for navX
-    int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
-    //setting simulated yaw angle to the JNI angle
-    m_simYawAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
   }
+
+
+  // public double armNavxPitchdeg() {
+  //   return -armNavX.getRoll();
+  // }
 
   public Rotation2d navXRotation2d() {
     return navX.getRotation2d();
   }
 
-  public void setNavXAngle(double angle) {
-    m_simYawAngle.set(angle);
+  public double navXYawDeg() {
+    return navX.getYaw();
   }
 
-  public double navXYaw() {
-    return navX.getYaw();
+  public double wrappedNavXHeading() {
+    return MathUtil.inputModulus(-navX.getYaw(), 0, 360);
+  }
+
+  public void setFusedHeadingOffset(double offset) {
+    m_fusedHeadingOffset = offset;
+  }
+
+  public double NavXFusedHeading() {
+    return MathUtil.inputModulus(navX.getFusedHeading() + 
+      m_fusedHeadingOffset, 0, 360);
   }
 
   public double navXPitch() {
@@ -111,31 +129,33 @@ public class Sensors extends SubsystemBase {
     navX.reset();
   }
 
+  public void setSimNavXAngle(double angle) {
+    m_simYawAngle.set(angle);
+  }
+
   public double navXTurnRate() {
     return navX.getRate();
   }
 
-  public boolean topV3ColorSensor() {
-    return (m_topV3ColorSensor.getProximity() > IndexerConstants.topThresh);
+  public Transform2d navXdisplacement() {
+    return new Transform2d(new Translation2d(
+      navX.getDisplacementX(), navX.getDisplacementY()), 
+        new Rotation2d());
+
   }
 
-  public boolean bottomV3ColorSensor() {
-    return (m_bottomV3ColorSensor.getProximity() > IndexerConstants.bottomThresh);
+  public void resetNavxDisplacement() {
+    navX.resetDisplacement();
+    
   }
 
-  public boolean topCargoBlue() {
-    if (m_topColor.blue >= IndexerConstants.blueThresh) {
-      return true;
-    } else {
-      return false;
-    }
+  public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+      if (photonFrontPoseEstimator == null) {
+        return Optional.empty();
+      }
+
+    photonFrontPoseEstimator.setReferencePose(prevEstimatedRobotPose);
+    return photonFrontPoseEstimator.update();
   }
 
-  public boolean bottomCargoBlue() {
-    if (m_bottomColor.blue >= IndexerConstants.blueThresh) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 }

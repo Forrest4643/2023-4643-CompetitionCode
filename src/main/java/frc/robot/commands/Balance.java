@@ -6,34 +6,26 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
-import frc.robot.Constants.TurretConstants;
-import frc.robot.subsystems.TurretPIDSubsystem;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class TurretPosition extends PIDCommand {
-  /** Creates a new TurretPosition. */
-  public TurretPosition(TurretPIDSubsystem m_turretPIDsubsystem, double position) {
+public class Balance extends PIDCommand {
+  /** Creates a new Balance. */
+  public Balance() {
     super(
         // The controller that the command will use
-        new PIDController(TurretConstants.turretkP, TurretConstants.turretkI, TurretConstants.turretkD),
+        new PIDController(0, 0, 0),
         // This should return the measurement
-        () -> m_turretPIDsubsystem.turretPositionDEG(),
+        () -> 0,
         // This should return the setpoint (can also be a constant)
-        () -> { 
-          System.out.println("TurretPos Setpoint: " + position);
-          return position; 
-        },
+        () -> 0,
         // This uses the output
         output -> {
-          m_turretPIDsubsystem.setMotor(output);
+          // Use the output here
         });
-
-  }
-
-  public double getSetpoint() {
-    return this.m_controller.getSetpoint();
+    // Use addRequirements() here to declare subsystem dependencies.
+    // Configure additional PID options by calling `getController` here.
   }
 
   // Returns true when the command should end.

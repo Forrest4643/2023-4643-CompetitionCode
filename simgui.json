@@ -1,8 +1,59 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [1]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [2]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [3]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [4]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [7]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/DriveSubsystem": "Subsystem",
+      "/LiveWindow/Sensors": "Subsystem",
+      "/LiveWindow/Ungrouped/PIDController[16]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[17]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[18]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[19]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[20]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[21]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[22]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[4]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[5]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[6]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[7]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[8]": "PIDController",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/LiveWindow/Ungrouped/navX-Sensor[1]": "Gyro",
+      "/LiveWindow/Ungrouped/navX-Sensor[2]": "Gyro",
+      "/Shuffleboard/cartesianMecanumDrive/driveHeadingController": "PIDController",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/frontAprilTagCamera Sim Field": "Field2d",
       "/SmartDashboard/photonvision Sim Field": "Field2d"
     },
     "windows": {
@@ -10,33 +61,77 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/frontAprilTagCamera Sim Field": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
   "NetworkTables": {
-    "Retained Values": {
-      "open": false
-    },
     "transitory": {
       "LiveWindow": {
         ".status": {
           "open": true
         },
+        "ArmSubsystem": {
+          "open": true
+        },
+        "TelescopingSubsystem": {
+          "open": true
+        },
+        "Ungrouped": {
+          "PIDController[16]": {
+            "open": true
+          },
+          "PIDController[17]": {
+            "open": true
+          },
+          "PIDController[18]": {
+            "open": true
+          },
+          "PIDController[3]": {
+            "open": true
+          },
+          "open": true
+        },
+        "WristSubsystem": {
+          "open": true
+        },
         "open": true
       },
       "Shuffleboard": {
+        "ManipControl": {
+          "open": true
+        },
+        "TelescopingSubsystem": {
+          "open": true
+        },
+        "WristSubsystem": {
+          "open": true
+        },
+        "deployControl": {
+          "open": true
+        },
         "open": true
       },
       "SmartDashboard": {
         "Field": {
           "open": true
         },
-        "open": true
+        "open": true,
+        "photonvision Sim Field": {
+          "open": true
+        }
       },
       "photonvision": {
+        "frontAprilTagCamera": {
+          "open": true
+        },
         "open": true,
         "photonvision": {
-          "open": true
+          "open": false
         }
       }
     }
@@ -45,10 +140,7 @@
     "Clients": {
       "open": true
     },
-    "Connections": {
-      "open": true
-    },
-    "Server": {
+    "shuffleboard": {
       "Publishers": {
         "open": true
       },
@@ -57,8 +149,5 @@
       },
       "open": true
     }
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

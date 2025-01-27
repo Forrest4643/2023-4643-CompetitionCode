@@ -31,6 +31,7 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/ArmSubsystem": "Subsystem",
       "/LiveWindow/DriveSubsystem": "Subsystem",
       "/LiveWindow/Sensors": "Subsystem",
       "/LiveWindow/Ungrouped/PIDController[16]": "PIDController",
